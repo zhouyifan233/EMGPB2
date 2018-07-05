@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{12eef2e4-2f78-4711-9c5c-fc1165c64a8a}</ProjectGuid>
+    <ProjectHome />
+    <StartupFile />
+    <SearchPath />
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <InterpreterId />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <PropertyGroup>
+    <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="bayou\datastructures\sequence.py" />
+    <Compile Include="bayou\datastructures\state.py" />
+    <Compile Include="bayou\datastructures\tests\test_sequence.py" />
+    <Compile Include="bayou\datastructures\tests\test_state.py" />
+    <Compile Include="bayou\datastructures\__init__.py" />
+    <Compile Include="bayou\expmax\base.py" />
+    <Compile Include="bayou\expmax\lineargaussian.py" />
+    <Compile Include="bayou\expmax\tests\test_em_lineargaussian.py" />
+    <Compile Include="bayou\expmax\tests\WASABI_tracks_learn.py" />
+    <Compile Include="bayou\expmax\__init__.py" />
+    <Compile Include="bayou\filters\base.py" />
+    <Compile Include="bayou\filters\lineargaussian.py" />
+    <Compile Include="bayou\filters\__init__.py" />
+    <Compile Include="bayou\models\model.py" />
+    <Compile Include="bayou\models\__init__.py" />
+    <Compile Include="bayou\smoothers\base.py" />
+    <Compile Include="bayou\smoothers\lineargaussian.py" />
+    <Compile Include="bayou\smoothers\tests\test_lineargaussian_smoother.py" />
+    <Compile Include="bayou\smoothers\__init__.py" />
+    <Compile Include="bayou\utils\util.py" />
+    <Compile Include="bayou\utils\__init__.py" />
+    <Compile Include="bayou\__init__.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="bayou" />
+    <Folder Include="bayou\datastructures" />
+    <Folder Include="bayou\datastructures\tests" />
+    <Folder Include="bayou\expmax" />
+    <Folder Include="bayou\expmax\tests" />
+    <Folder Include="bayou\filters" />
+    <Folder Include="bayou\models" />
+    <Folder Include="bayou\smoothers" />
+    <Folder Include="bayou\smoothers\tests" />
+    <Folder Include="bayou\utils" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+</Project>
