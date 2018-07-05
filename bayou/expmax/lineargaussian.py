@@ -167,6 +167,17 @@ class LinearGaussian(EM):
                                           learn_H, learn_R,
                                           learn_A, learn_Q, learn_init_state,
                                           keep_Q_structure, diagonal_Q)
+            
+            print("Estimated F: ")
+            print(model.A)
+            print("Estimated Q: ")
+            print(model.Q)
+            print("Estimated H: ")
+            print(model.H)
+            print("Estimated R: ")
+            print(model.R)
+            print("iteration %d ... LL %.5f" % (i, np.sum(sequence_LLs)))
+            print("-----------------------------------------------------------------------")
 
         print('Converged. Iterations:', i)
         return model, dataset, LLs
