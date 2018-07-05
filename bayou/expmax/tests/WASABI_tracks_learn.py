@@ -15,7 +15,7 @@ def test_em():
         for_init_state.extend([0, 0])
         initial_state = Gaussian(np.array(for_init_state).reshape(4,1), 1*np.eye(4))
         
-        initial_model = ConstantVelocity(1.0, 100.0, 4.0, 4, 2)
+        initial_model = ConstantVelocity(1.0, 1.0, 1.0, 4, 2)
         measurement = np.expand_dims(measurement, axis=-1)
         sequence = GaussianSequence(measurement, initial_state)
         dataset.append(sequence)
