@@ -1,3 +1,6 @@
 __pycache__/
 .idea/
 .vscode/
+.vs/
+*.pyproj
+*.sln
