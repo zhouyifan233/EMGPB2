@@ -17,7 +17,7 @@ def test_em():
     dataset = [sequence]
 
     model, dataset, LLs = LinearGaussian.EM(dataset, initial_model,
-                                            max_iters=100, threshold=0.000001,
+                                            max_iters=5, threshold=0.0001,
                                             learn_H=True, learn_R=True,
                                             learn_A=True, learn_Q=True, learn_init_state=True,
                                             keep_Q_structure=False, diagonal_Q=False)

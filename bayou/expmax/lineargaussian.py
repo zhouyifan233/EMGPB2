@@ -32,7 +32,7 @@ class LinearGaussian(EM):
             data_cardinality += dataset[n].len
 
         H_terms = [0, 0]  # term_0 @ inv(term_1)
-        R_terms = [0, 0, 0]  # 1/term_0 * (term_1 - H @ term_2)
+        R_terms = [0, 0, 0, 0]  # 1/term_0 * (term_1 - H @ term_2)
         A_terms = [0, 0]  # term_0 @ inv(term_1)
         Q_terms = [0, 0, 0]  # 1/term_0 * (term_1 - A @ term_2)
 
@@ -56,13 +56,17 @@ class LinearGaussian(EM):
                 term_0 = 0
                 term_1 = 0
                 term_2 = 0
+                term_3 = 0
                 for t in range(0, sequence.len):
                     term_1 += sequence.measurements[t] @ sequence.measurements[t].T
                     term_2 += smoothed_x[t] @ sequence.measurements[t].T
+                    term_3 += sequence.measurements[t] @ smoothed_x[t].T
+                
                 term_0 += sequence.len
                 R_terms[0] += term_0
                 R_terms[1] += term_1
                 R_terms[2] += term_2
+                R_terms[3] += term_3
 
             if learn_A or learn_Q:
                 term_0 = 0
@@ -101,7 +105,8 @@ class LinearGaussian(EM):
             model.H = new_H
 
         if learn_R:
-            new_R = (R_terms[1] - 2 * old_H @ R_terms[2] + old_H @ H_terms[1] @ old_H.T) / R_terms[0]
+            new_R = (R_terms[1] - R_terms[3] @ old_H.T - old_H @ R_terms[2] + old_H @ H_terms[1] @ old_H.T) / R_terms[0]
+            #print(- R_terms[3] @ old_H.T - old_H @ R_terms[2])
             model.R = new_R
 
         if learn_A:
