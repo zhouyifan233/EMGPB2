@@ -61,7 +61,7 @@ class LinearGaussian(EM):
                     term_1 += sequence.measurements[t] @ sequence.measurements[t].T
                     term_2 += smoothed_x[t] @ sequence.measurements[t].T
                     term_3 += sequence.measurements[t] @ smoothed_x[t].T
-                
+
                 term_0 += sequence.len
                 R_terms[0] += term_0
                 R_terms[1] += term_1
@@ -162,6 +162,7 @@ class LinearGaussian(EM):
             # Check convergence
             sequence_LLs = [np.sum(sequence.loglikelihood) for sequence in dataset]
             LLs.append(np.sum(sequence_LLs))
+            print("Log-likelihood: " + str(np.sum(sequence_LLs)))
             if len(LLs) > 1:
                 if Utility.check_lik_convergence(LLs[-1], LLs[-2], threshold):
                     print('iterations:', i)
@@ -172,7 +173,7 @@ class LinearGaussian(EM):
                                           learn_H, learn_R,
                                           learn_A, learn_Q, learn_init_state,
                                           keep_Q_structure, diagonal_Q)
-            
+
             print("Estimated F: ")
             print(model.A)
             print("Estimated Q: ")
