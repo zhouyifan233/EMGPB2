@@ -33,12 +33,12 @@ H = np.asanyarray([
     [0, 1, 0, 0]
 ])
 # Let's assume two Kalman filters
-Q = [get_Q(0.1), get_Q(0.01)]
-R = [get_R(1), get_R(1)]
+Q = [get_Q(0.3), get_Q(0.1)]
+R = [get_R(1), get_R(3)]
 
 # Create path
 kf_ind = 0
-kf_change_pnt = [600]
+kf_change_pnt = [100]
 x_tminus1 = np.asarray([[0], [0], [1], [1]])
 path = []
 meas = []

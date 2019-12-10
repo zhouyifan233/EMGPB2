@@ -41,7 +41,7 @@ class SKF(EM):
         Q_terms = np.empty([n_models], dtype=list)
         for n in range(n_models):
             H_terms[n] = [0, 0]
-            R_terms[n] = [0, 0, 0]
+            R_terms[n] = [0, 0, 0, 0]
             A_terms[n] = [0, 0]
             Q_terms[n] = [0, 0, 0]
 
@@ -66,13 +66,16 @@ class SKF(EM):
                     term_0 = 0
                     term_1 = 0
                     term_2 = 0
+                    term_3 = 0
                     for t in range(0, sequence.len):
                         term_1 += weights[t] * sequence.measurements[t] @ sequence.measurements[t].T
                         term_2 += weights[t] * x_T[t] @ sequence.measurements[t].T
+                        term_3 += weights[t] * sequence.measurements[t] @ x_T[t].T
                         term_0 += weights[t]
                     R_terms[m][0] += term_0
                     R_terms[m][1] += term_1
                     R_terms[m][2] += term_2
+                    R_terms[m][3] += term_3
 
                 if learn_A or learn_Q:
                     term_0 = 0
@@ -90,11 +93,8 @@ class SKF(EM):
                     term_2 = 0
                     for t in range(1, sequence.len):
                         for j in range(n_models):
-                            t1 = np.exp(sequence.smooth_joint_pr[t, j, m]) * (V_T[t] + x_T[t] @ x_T[t].T)
-                            term_1 += t1
-                            t2 = np.exp(sequence.smooth_joint_pr[t, j, m]) * (sequence.smooth_crossvar[j, m][t] + sequence.smooth_j_k_t[t - 1, j, m].mean @ x_T[t].T)
-                            term_2 += t2
-
+                            term_1 += np.exp(sequence.smooth_joint_pr[t, j, m]) * (V_T[t] + x_T[t] @ x_T[t].T)
+                            term_2 += np.exp(sequence.smooth_joint_pr[t, j, m]) * (sequence.smooth_crossvar[j, m][t] + sequence.smooth_j_k_t[t - 1, j, m].mean @ x_T[t].T)
                             term_0 += np.exp(sequence.smooth_joint_pr[t, j, m])
                     Q_terms[m][0] += term_0
                     Q_terms[m][1] += term_1
@@ -103,13 +103,16 @@ class SKF(EM):
         # Update Model
         if learn_R:
             for m in range(n_models):
-                new_R = (R_terms[m][1] - models[m].H @ R_terms[m][2] - (R_terms[m][2].T @ models[m].H.T) + models[m].H @ H_terms[m][1] @ models[m].H.T) / R_terms[m][0]
+                # new_R = (R_terms[m][1] - models[m].H @ R_terms[m][2] - (R_terms[m][2].T @ models[m].H.T) + models[m].H @ H_terms[m][1] @ models[m].H.T) / R_terms[m][0]
+                new_R = (R_terms[m][1] - models[m].H @ R_terms[m][2] - R_terms[m][3] @ models[m].H.T + models[m].H @ H_terms[m][1] @ models[m].H.T) / R_terms[m][0]
                 models[m].R = new_R
+                print('new_R: ' + str(new_R))
 
         if learn_H:
             for m in range(n_models):
                 new_H = H_terms[m][0] @ linalg.inv(H_terms[m][1])
                 models[m].H = new_H
+                print('new_H: ' + str(new_H))
 
         if learn_Q:
             for m in range(n_models):
@@ -135,11 +138,13 @@ class SKF(EM):
                 if diagonal_Q:
                     new_Q = np.diag(np.diag(new_Q))
                 models[m].Q = new_Q
+                print('new_Q: ' + str(new_Q))
 
         if learn_A:
             for m in range(n_models):
                 new_A = A_terms[m][0] @ linalg.inv(A_terms[m][1])
                 models[m].A = new_A
+                print('new_A: ' + str(new_A))
 
         z_numerator = 0
         z_denominator = 0
@@ -201,6 +206,6 @@ class SKF(EM):
                                    learn_H, learn_R, learn_A, learn_Q,
                                    learn_init_state, learn_Z, keep_Q_structure,
                                    diagonal_Q, wishart_prior)
-
+            print('-----------------------------------------------')
         print('Converged. Iterations:', i)
         return models, Z, dataset, LLs
