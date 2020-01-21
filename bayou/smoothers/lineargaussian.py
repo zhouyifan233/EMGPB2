@@ -42,6 +42,9 @@ class RTS(LinearGaussian):
         V_smoothed = V + smoother_gain @ (V_tplus1 - V_predict) @ smoother_gain.T
         V_smoothed = (V_smoothed + V_smoothed.T) / 2.0  # Force Symmetric
 
+        #V_f_tplus1 = filtered_state_tplus1.covar
+        #V_smoothed_tplus1_t = V_f_tplus1 @ smoother_gain.T + smoother_gain @ (V_tplus1_t - A @ V_f_tplus1) @ smoother_gain.T
+
         V_f_tplus1 = filtered_state_tplus1.covar
         V_smoothed_tplus1_t = (
             V_tplus1_t + (V_tplus1 - V_f_tplus1) @ linalg.inv(V_f_tplus1) @ V_tplus1_t

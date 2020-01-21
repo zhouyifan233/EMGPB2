@@ -1,15 +1,10 @@
 # -*- coding: utf-8 -*-
 import copy
-import multiprocessing
-
 import numpy as np
 from scipy import linalg
-
 from bayou.expmax.base import EM
-#from bayou.datastructures import Gaussian, GMM
 from bayou.filters.skf import GPB2 as GPB2f
 from bayou.smoothers.skf import GPB2 as GPB2s
-
 from bayou.utils.util import Utility
 
 
@@ -34,7 +29,6 @@ class SKF(EM):
             data_cardinality += dataset[n].len
 
         n_models = len(models)
-
         H_terms = np.empty([n_models], dtype=list)
         R_terms = np.empty([n_models], dtype=list)
         A_terms = np.empty([n_models], dtype=list)
@@ -47,7 +41,7 @@ class SKF(EM):
 
         for n in range(N):
             sequence = dataset[n]
-
+            '''
             for m in range(n_models):
                 weights = np.exp(sequence.get_smooth_weights(m))
                 x_T = np.array([state.components[m].mean for state in sequence.smoothed])
@@ -99,33 +93,64 @@ class SKF(EM):
                     Q_terms[m][0] += term_0
                     Q_terms[m][1] += term_1
                     Q_terms[m][2] += term_2
-
+            '''
         # Update Model
-        if learn_R:
+        if learn_A:
             for m in range(n_models):
-                # new_R = (R_terms[m][1] - models[m].H @ R_terms[m][2] - (R_terms[m][2].T @ models[m].H.T) + models[m].H @ H_terms[m][1] @ models[m].H.T) / R_terms[m][0]
-                new_R = (R_terms[m][1] - models[m].H @ R_terms[m][2] - R_terms[m][3] @ models[m].H.T + models[m].H @ H_terms[m][1] @ models[m].H.T) / R_terms[m][0]
-                models[m].R = new_R
-                print('new_R: ' + str(new_R))
+                print(np)
+                weights = np.exp(sequence.get_smooth_weights(m))
+                x_T = np.array([state.components[m].mean for state in sequence.smoothed])
+                V_T = np.array([state.components[m].covar for state in sequence.smoothed])
 
-        if learn_H:
-            for m in range(n_models):
-                new_H = H_terms[m][0] @ linalg.inv(H_terms[m][1])
-                models[m].H = new_H
-                print('new_H: ' + str(new_H))
+                P_t_tminus1 = 0
+                P_tminus1 = 0
+
+                '''
+                for t in range(1, sequence.len):
+                    for j in range(n_models):
+                        P_t_tminus1 += np.exp(sequence.smooth_joint_pr[t, j, m]) * (
+                                    sequence.smooth_crossvar[j, m][t] + x_T[t] @ sequence.smooth_j_k_t[t - 1, j, m].mean.T)
+                        P_tminus1 += np.exp(sequence.smooth_joint_pr[t, j, m]) * (V_T[t - 1] + x_T[t - 1] @ x_T[t - 1].T)
+                '''
+
+
+
+                new_A = P_t_tminus1 @ linalg.inv(P_tminus1)
+                models[m].A = new_A
+                print('model -- ' + str(m) + ' new_A: ' + str(new_A))
 
         if learn_Q:
             for m in range(n_models):
+                weights = np.exp(sequence.get_smooth_weights(m))
+                x_T = np.array([state.components[m].mean for state in sequence.smoothed])
+                V_T = np.array([state.components[m].covar for state in sequence.smoothed])
+
+                P_t = 0
+                P_tminus1 = 0
+                P_tminus1_t = 0
+                P_t_tminus1 = 0
+                W_sum = 0
+
+                for t in range(1, sequence.len):
+                    for j in range(n_models):
+                        P_t += np.exp(sequence.smooth_joint_pr[t, j, m]) * (V_T[t] + x_T[t] @ x_T[t].T)
+                        P_tminus1 += np.exp(sequence.smooth_joint_pr[t, j, m]) * (V_T[t - 1] + x_T[t - 1] @ x_T[t - 1].T)
+                        P_tminus1_t += np.exp(sequence.smooth_joint_pr[t, j, m]) * (
+                                    sequence.smooth_crossvar[j, m][t] + sequence.smooth_j_k_t[t - 1, j, m].mean @ x_T[t].T)
+                        P_t_tminus1 += np.exp(sequence.smooth_joint_pr[t, j, m]) * (
+                                sequence.smooth_crossvar[j, m][t] + x_T[t] @ sequence.smooth_j_k_t[t - 1, j, m].mean.T)
+                        W_sum += np.exp(sequence.smooth_joint_pr[t, j, m])
+
                 if wishart_prior:
                     alpha = 0.1 * data_cardinality
                     numerator = (
                         alpha * np.eye(models[m].Q.shape[0]) +
-                        Q_terms[m][1] - models[m].A @ Q_terms[m][2] - A_terms[m][0] @ models[m].A.T + models[m].A @ A_terms[m][1] @ models[m].A.T
+                        P_t - models[m].A @ P_tminus1_t - P_t_tminus1 @ models[m].A.T + models[m].A @ P_tminus1 @ models[m].A.T
                     )
                     denominator = (alpha + Q_terms[m][0])
                 else:
-                    numerator = Q_terms[m][1] - models[m].A @ Q_terms[m][2] - A_terms[m][0] @ models[m].A.T + models[m].A @ A_terms[m][1] @ models[m].A.T
-                    denominator = Q_terms[m][0]
+                    numerator = P_t - models[m].A @ P_tminus1_t - P_t_tminus1 @ models[m].A.T + models[m].A @ P_tminus1 @ models[m].A.T
+                    denominator = W_sum
 
                 if keep_Q_structure:
                     structure = initial_models[m].get_Q_structure()
@@ -138,13 +163,47 @@ class SKF(EM):
                 if diagonal_Q:
                     new_Q = np.diag(np.diag(new_Q))
                 models[m].Q = new_Q
-                print('new_Q: ' + str(new_Q))
+                print('model -- ' + str(m) + ' new_Q: ' + str(new_Q))
 
-        if learn_A:
+        if learn_H:
             for m in range(n_models):
-                new_A = A_terms[m][0] @ linalg.inv(A_terms[m][1])
-                models[m].A = new_A
-                print('new_A: ' + str(new_A))
+                weights = np.exp(sequence.get_smooth_weights(m))
+                x_T = np.array([state.components[m].mean for state in sequence.smoothed])
+                V_T = np.array([state.components[m].covar for state in sequence.smoothed])
+
+                y_t_times_x_t = 0
+                P_t = 0
+
+                for t in range(1, sequence.len):
+                        y_t_times_x_t += weights[t] * sequence.measurements[t] @ x_T[t].T
+                        P_t += weights[t] * (V_T[t] + x_T[t] @ x_T[t].T)
+
+                new_H = y_t_times_x_t @ linalg.inv(P_t)
+                models[m].H = new_H
+                print('model -- ' + str(m) + ' new_H: ' + str(new_H))
+
+        if learn_R:
+            for m in range(n_models):
+                weights = np.exp(sequence.get_smooth_weights(m))
+                x_T = np.array([state.components[m].mean for state in sequence.smoothed])
+                V_T = np.array([state.components[m].covar for state in sequence.smoothed])
+
+                y_t_times_x_t = 0
+                P_t = 0
+                y_t_times_y_t = 0
+                x_t_times_y_t = 0
+                W_sum = 0
+
+                for t in range(0, sequence.len):
+                    y_t_times_y_t += weights[t] * sequence.measurements[t] @ sequence.measurements[t].T
+                    x_t_times_y_t += weights[t] * x_T[t] @ sequence.measurements[t].T
+                    y_t_times_x_t += weights[t] * sequence.measurements[t] @ x_T[t].T
+                    P_t += weights[t] * (V_T[t] + x_T[t] @ x_T[t].T)
+                    W_sum += weights[t]
+
+                new_R = (y_t_times_y_t - models[m].H @ x_t_times_y_t - y_t_times_x_t @ models[m].H.T + models[m].H @ P_t @ models[m].H.T) / W_sum
+                models[m].R = new_R
+                print('model -- ' + str(m) + ' new_R: ' + str(new_R))
 
         z_numerator = 0
         z_denominator = 0

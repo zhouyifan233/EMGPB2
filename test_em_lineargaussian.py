@@ -13,7 +13,7 @@ def test_em():
         [0, 0, 1, 0],
         [0, 0, 0, 1]
     ])
-    H = np.asanyarray([
+    H = np.asarray([
         [1, 0, 0, 0],
         [0, 1, 0, 0]
     ])
@@ -21,8 +21,9 @@ def test_em():
     Gaussian(mean, covariance)
     LinearModel(A, Q, H, R)
     """
-    initial_state = Gaussian(np.zeros([4, 1]), np.eye(4))
-    initial_model = LinearModel(F, 1*np.eye(4), H, 1*np.eye(2))
+    initial_state = Gaussian(np.zeros([4, 1]), 10.0*np.eye(4))
+    initial_model = LinearModel(F, 0.1*np.eye(4), H, 10.0*np.eye(2))
+    #initial_model = ConstantVelocity(dt=1.0, q=1.0, r=1.0, state_dim=4, obs_dim=2)
 
     measurements = np.loadtxt('data/measurement1.csv', delimiter=',')
     measurements = np.expand_dims(measurements, axis=-1)
@@ -31,7 +32,7 @@ def test_em():
 
     model, dataset, LLs = LinearGaussian.EM(dataset, initial_model,
                                             max_iters=100, threshold=1e-8,
-                                            learn_H=False, learn_R=True,
+                                            learn_H=True, learn_R=True,
                                             learn_A=False, learn_Q=True, learn_init_state=True,
                                             keep_Q_structure=False, diagonal_Q=False)
 
@@ -49,5 +50,7 @@ def test_em():
     print(dataset[0].initial_state.mean)
     #print(dataset[0].initial_state.covar)
 
+    return model, dataset
 
-test_em()
+
+model, dataset = test_em()

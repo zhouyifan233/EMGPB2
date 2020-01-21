@@ -93,10 +93,9 @@ class GMMSequence(Sequence):
         self.measurement_likelihood = np.zeros([T])
 
         # Pr(s_{t-1} = j, s_{t} = k | y_{1:t})
-        self.filter_joint_pr = np.zeros([T, N, N])
+        # self.filter_joint_pr = np.zeros([T, N, N])
         # Pr(s_{t-1} = j, s_{t} = k | y_{1:T})
-        self.smooth_joint_pr = np.zeros([T, N, N])
-
+        # self.smooth_joint_pr = np.zeros([T, N, N])
         self.smooth_j_k_t = np.empty([self.len, N, N], dtype=Gaussian)
 
     def get_filter_crossvar(self, t):
@@ -132,3 +131,6 @@ class GMMSequence(Sequence):
         for t in range(self.len):
             weights.append(self.smoothed[t].weights[m])
         return np.array(weights)
+
+    def get_n_components(self):
+        return

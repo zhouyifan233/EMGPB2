@@ -13,13 +13,16 @@ def get_Q(Q_sig, dt=1):
     ])
     return Q
 
+def get_Q_RW(Q_sig, dt=1):
+    Q = Q_sig * np.eye(4)
+    return Q
 
 def get_R(R_sig):
     R = R_sig * np.eye(2)
     return R
 
 # Time
-t = 200
+t = 400
 # transformation matrix
 F = np.asarray([
     [1, 0, 1, 0],
@@ -27,19 +30,27 @@ F = np.asarray([
     [0, 0, 1, 0],
     [0, 0, 0, 1]
 ])
+F_RW = np.asarray([
+    [1, 0],
+    [0, 1]
+])
 # measurement model
 H = np.asanyarray([
     [1, 0, 0, 0],
     [0, 1, 0, 0]
 ])
+H_RW = np.asanyarray([
+    [1, 0],
+    [0, 1]
+])
 # Let's assume two Kalman filters
-Q = [get_Q(0.3), get_Q(0.1)]
-R = [get_R(1), get_R(3)]
+Q = [get_Q_RW(0.1), get_Q_RW(0.3)]
+R = [get_R(0.01), get_R(0.02)]
 
 # Create path
 kf_ind = 0
 kf_change_pnt = [100]
-x_tminus1 = np.asarray([[0], [0], [1], [1]])
+x_tminus1 = np.asarray([[0.0], [0.0], [0.0], [0.0]])
 path = []
 meas = []
 for i in range(t):
@@ -70,5 +81,7 @@ for i in range(len(kf_change_pnt)+1):
     print(Q[i])
     print('R_' + str(i) + ': ')
     print(R[i])
-data = pd.DataFrame(meas)
-data.to_csv('data/measurement1.csv', index=False, header=False)
+meas_df = pd.DataFrame(meas)
+meas_df.to_csv('data/measurement3.csv', index=False, header=False)
+truth_df = pd.DataFrame(path)
+truth_df.to_csv('data/groundtruth3.csv', index=False, header=False)

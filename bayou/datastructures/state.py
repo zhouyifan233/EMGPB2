@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+from bayou.utils import Utility
 
 
 class State():
@@ -58,19 +59,14 @@ class GMM(State):
             transforms.append(row)
         self.transforms = np.array(transforms)
 
-    def collapse(self, n_components=None,
-                 components=None,
-                 weights=None,
-                 transforms=None):
+    def collapse(self, components=None, weights=None, transforms=None):
         """
         Parameters
         ----------
 
         weights : np.array
-            log weights
+            probability weights
         """
-        if n_components is None:
-            n_components = self.n_components
         if components is None:
             components = self.components
         if weights is None:
@@ -78,6 +74,9 @@ class GMM(State):
         if transforms is None:
             transforms = self.transforms[:, 0]
 
+        return Utility.Collapse(components, weights, transforms)
+
+        '''
         x = 0.0
         V = 0.0
 
@@ -86,8 +85,7 @@ class GMM(State):
 
         for n in range(n_components):
             diff = transforms[n] @ components[n].mean - x
-            V += np.exp(weights[n]) * (
-                transforms[n] @ components[n].covar @ transforms[n].T +
-                diff @ diff.T)
+            V += np.exp(weights[n]) * (transforms[n] @ components[n].covar @ transforms[n].T + diff @ diff.T)
 
         return Gaussian(mean=x, covar=V)
+        '''

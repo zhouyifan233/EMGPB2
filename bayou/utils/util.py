@@ -3,6 +3,7 @@ import numpy as np
 import copy
 from scipy import linalg
 from scipy.stats import multivariate_normal
+from bayou.datastructures.state import Gaussian
 
 
 class Utility():
@@ -56,3 +57,38 @@ class Utility():
             new_probs.append(thisll / np.sum(lls))
         return new_probs
 
+    @staticmethod
+    def CollapseCross(x_list_t, x_list_tminus1, V_list_t_tminus1, W):
+        n_components = len(W)
+        mu_x_t = 0.0
+        mu_x_tminus1 = 0.0
+
+        for i in range(n_components):
+            mu_x_t += W[i] * x_list_t[i]
+            mu_x_tminus1 += W[i] * x_list_tminus1
+
+        V_collapsed_t_tminus1 = np.zeros_like(V_list_t_tminus1[0])
+        for i in range(n_components):
+            V_collapsed_t_tminus1 += W[i] * V_list_t_tminus1 + W[i] * ((x_list_t[i] - mu_x_t) @ (x_list_tminus1[i] - mu_x_tminus1))
+
+        return V_collapsed_t_tminus1
+
+
+    @staticmethod
+    def Collapse(components: list, weights: list, transforms: list):
+        n_components = len(components)
+        if n_components < 2:
+            print('There are less than 2 components. Not necessary for collapsing.')
+            return components[0]
+
+        x = 0.0
+        V = 0.0
+
+        for n in range(n_components):
+            x += weights[n] * transforms[n] @ components[n].mean
+
+        for n in range(n_components):
+            diff = transforms[n] @ components[n].mean - x
+            V += weights[n] * (transforms[n] @ components[n].covar @ transforms[n].T + diff @ diff.T)
+
+        return Gaussian(mean=x, covar=V)
