@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import numpy as np
-from bayou.utils import Utility
 
 
 class State():
@@ -19,7 +18,7 @@ class Gaussian(State):
         (dim, dim)
     """
 
-    def __init__(self, mean, covar):
+    def __init__(self, mean: np.ndarray, covar: np.ndarray):
         self.dim = mean.shape[0]
         self.mean = mean
         self.covar = covar
@@ -48,6 +47,7 @@ class GMM(State):
         self.gaussian_dims = [g.dim for g in gaussian_list]
         self.components = gaussian_list
         self.weights = np.log(np.ones([self.n_components, 1]) / self.n_components)
+        self.Pr_Stplus1_St_y1T = np.zeros((self.n_components, self.n_components))
 
         transforms = []
         for i in self.gaussian_dims:
@@ -73,8 +73,20 @@ class GMM(State):
             weights = self.weights
         if transforms is None:
             transforms = self.transforms[:, 0]
+        n_components = len(components)
+        dim = components[0].mean.shape[0]
 
-        return Utility.Collapse(components, weights, transforms)
+        x = np.zeros((dim, 1))
+        V = np.zeros((dim, dim))
+
+        for n in range(n_components):
+            x += weights[n] * transforms[n] @ components[n].mean
+
+        for n in range(n_components):
+            diff = transforms[n] @ components[n].mean - x
+            V += weights[n] * (transforms[n] @ components[n].covar @ transforms[n].T + diff @ diff.T)
+
+        return Gaussian(mean=x, covar=V)
 
         '''
         x = 0.0

@@ -33,18 +33,14 @@ class GPB2(SKF):
                                                                         initial,
                                                                         gmm_state.transforms[i, j])
 
-        # I = L_i_j_t + np.log(Z) + gmm_state.weights
-        # normalisation_constant = logsumexp(I)
-        # measurement_likelihood = normalisation_constant
-        # log_pr_t_tplus1_tplus1 = I - normalisation_constant
-        # log_weights_tplus1 = logsumexp(log_pr_t_tplus1_tplus1, axis=0, keepdims=True).T
-        # weights_tplus1 = log_weights_tplus1
-        # W = log_pr_t_tplus1_tplus1 - log_weights_tplus1.T
-        # for i in range(N):
-        #     for j in range(N):
-        #        W[i, j] = M_tminus1_t[i, j] / M_t[j]
+        # tmp_numerator = np.exp(L_i_j_t) * Z * M_tminus1     # i * j
+        tmp_numerator = np.zeros((N, N))
+        for i in range(N):
+            for j in range(N):
+                tmp_numerator[i, j] = np.exp(L_i_j_t[i, j]) * Z[i, j] * M_tminus1[i]
 
-        tmp_numerator = np.exp(L_i_j_t) * Z * M_tminus1     # i * j
+        if np.any(tmp_numerator == 0):
+            print(tmp_numerator)
         measurement_likelihood = logsumexp(np.log(tmp_numerator))       # 1
         M_tminus1_t = tmp_numerator / np.sum(tmp_numerator)     # i, j
         M_t = np.sum(M_tminus1_t, axis=0)       # j
@@ -55,9 +51,6 @@ class GPB2(SKF):
 
         states_j = []
         for j in range(N):
-            # state_j = gmm_state.collapse(components=filtered_i_j_t[:, j],
-            #                              weights=W[:, j],
-            #                              transforms=[np.eye(gmm_state.gaussian_dims[j])] * N)
             state_j = Utility.Collapse(components=list(filtered_i_j_t[:, j]),
                                        weights=list(W[:, j]),
                                        transforms=[np.eye(gmm_state.gaussian_dims[j])] * N)
@@ -88,13 +81,12 @@ class GPB2(SKF):
                                                          M_t,
                                                          False)
             gmmsequence.filtered[t] = gmm_state
-            # n_components = gmmsequence.initial_state.n_components
+            gmmsequence.filtered_collapsed[t] = gmm_state.collapse()
             # This is just rearrange the cross variance of filtering process.
             for j in range(n_components):
                 for k in range(n_components):
-                    gmmsequence.filter_crossvar[j, k][t] = VV[j, k]
+                    gmmsequence.filtered_crossvar[j, k][t] = VV[j, k]
             gmmsequence.loglikelihood[t] = LL
-            # gmmsequence.filter_joint_pr[t] = jPr
             gmmsequence.measurement_likelihood[t] = yL
 
         return gmmsequence

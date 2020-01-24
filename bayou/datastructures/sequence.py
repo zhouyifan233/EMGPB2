@@ -70,24 +70,29 @@ class GMMSequence(Sequence):
                 "initial state should be a gmm"
             )
         self.initial_state = initial_state
+        self.n_components = initial_state.n_components
         self.filtered = np.empty([self.len], dtype=GMM)
+        self.filtered_collapsed = np.empty([self.len], dtype=Gaussian)
         self.smoothed = np.empty([self.len], dtype=GMM)
+        self.smoothed_collapsed = np.empty([self.len], dtype=Gaussian)
+        # self.Pr_Stplus1_St_y1T = np.zeros([self.len], dtype=GMM)
 
-        N = self.initial_state.n_components
+        N = self.n_components
         dims = self.initial_state.gaussian_dims
         T = self.len
 
-        filter_crossvar = np.empty([N, N], dtype=np.ndarray)
+        filtered_crossvar = np.empty([N, N], dtype=np.ndarray)
         for m in range(N):
             for n in range(N):
-                filter_crossvar[m, n] = np.zeros([T, dims[n], dims[n]])
-        self.filter_crossvar = filter_crossvar
+                filtered_crossvar[m, n] = np.zeros([T, dims[n], dims[n]])
+        self.filtered_crossvar = filtered_crossvar
 
-        smooth_crossvar = np.empty([N, N], dtype=np.ndarray)
+        smoothed_crossvar = np.empty([N, N], dtype=np.ndarray)
         for m in range(N):
             for n in range(N):
-                smooth_crossvar[m,n] = np.zeros([T, dims[n], dims[n]])
-        self.smooth_crossvar = smooth_crossvar
+                smoothed_crossvar[m, n] = np.zeros([T, dims[n], dims[n]])
+        self.smoothed_crossvar = smoothed_crossvar
+        self.smoothed_crossvar_collapsed = np.zeros((T, dims[0], dims[0]))
 
         self.loglikelihood = np.zeros([T, N, N])
         self.measurement_likelihood = np.zeros([T])
@@ -98,20 +103,20 @@ class GMMSequence(Sequence):
         # self.smooth_joint_pr = np.zeros([T, N, N])
         self.smooth_j_k_t = np.empty([self.len, N, N], dtype=Gaussian)
 
-    def get_filter_crossvar(self, t):
+    def get_filter_crossvar_time(self, t):
         N = self.initial_state.n_components
         VV = np.empty([N, N], dtype=np.ndarray)
         for j in range(N):
             for k in range(N):
-                VV[j, k] = self.filter_crossvar[j, k][t]
+                VV[j, k] = self.filtered_crossvar[j, k][t]
         return VV
 
-    def get_smooth_crossvar(self, t):
+    def get_smooth_crossvar_time(self, t):
         N = self.initial_state.n_components
         VV = np.empty([N, N], dtype=np.ndarray)
         for j in range(N):
             for k in range(N):
-                VV[j, k] = self.smooth_crossvar[j, k][t]
+                VV[j, k] = self.smoothed_crossvar[j, k][t]
         return VV
 
     def get_filter_estimates(self):
@@ -126,11 +131,29 @@ class GMMSequence(Sequence):
             state_estimates.append(self.smoothed[t].collapse().mean)
         return state_estimates
 
-    def get_smooth_weights(self, m):
+    def get_filtered_means(self, t):
+        mu = []
+        for i in range(self.n_components):
+            mu.append(self.filtered[t].components[i].mean)
+        return np.array(mu)
+
+    def get_smoothed_means(self, t):
+        mu = []
+        for i in range(self.n_components):
+            mu.append(self.smoothed[t].components[i].mean)
+        return np.array(mu)
+
+    def get_smooth_weights(self):
         weights = []
         for t in range(self.len):
-            weights.append(self.smoothed[t].weights[m])
+            weights.append(self.smoothed[t].weights)
         return np.array(weights)
 
     def get_n_components(self):
-        return
+        return self.n_components
+
+    def get_smothed_Pr_Stplus1_St_y1T(self):
+        Pr_Stplus1_St_y1T = []
+        for t in range(self.len):
+            Pr_Stplus1_St_y1T.append(self.smoothed[t].Pr_Stplus1_St_y1T)
+        return np.asarray(Pr_Stplus1_St_y1T)

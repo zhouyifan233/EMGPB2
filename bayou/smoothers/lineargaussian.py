@@ -40,7 +40,6 @@ class RTS(LinearGaussian):
 
         x_smoothed = x + smoother_gain @ (x_tplus1 - x_predict)
         V_smoothed = V + smoother_gain @ (V_tplus1 - V_predict) @ smoother_gain.T
-        V_smoothed = (V_smoothed + V_smoothed.T) / 2.0  # Force Symmetric
 
         #V_f_tplus1 = filtered_state_tplus1.covar
         #V_smoothed_tplus1_t = V_f_tplus1 @ smoother_gain.T + smoother_gain @ (V_tplus1_t - A @ V_f_tplus1) @ smoother_gain.T
@@ -49,7 +48,6 @@ class RTS(LinearGaussian):
         V_smoothed_tplus1_t = (
             V_tplus1_t + (V_tplus1 - V_f_tplus1) @ linalg.inv(V_f_tplus1) @ V_tplus1_t
         )
-        V_smoothed_tplus1_t = (V_smoothed_tplus1_t + V_smoothed_tplus1_t.T) / 2.0  # Force Symmetric
 
         return Gaussian(mean=x_smoothed, covar=V_smoothed), V_smoothed_tplus1_t
 
@@ -66,6 +64,6 @@ class RTS(LinearGaussian):
                                           sequence.filter_crossvar[t + 1],
                                           model)
             sequence.smoothed[t] = state
-            sequence.smooth_crossvar[t + 1] = smooth_VV
+            sequence.smooth_crossvar[t+1] = smooth_VV
 
         return sequence

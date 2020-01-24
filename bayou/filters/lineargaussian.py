@@ -49,14 +49,14 @@ class Kalman(LinearGaussian):
 
         new_x = x_predict + filter_gain @ error
         new_V = (np.eye(n_dim_state) - filter_gain @ H) @ V_predict
-        new_V = (new_V + new_V.T) / 2.0  # Force Symmetric
+        # new_V = (new_V + new_V.T) / 2.0  # Force Symmetric
 
         # V_t_tminus1
         if initial:
             V_new_old = new_V
         else:
             V_new_old = (np.eye(n_dim_state) - filter_gain @ H) @ A @ V
-        V_new_old = (V_new_old + V_new_old.T) / 2.0  # Force Symmetric
+        # V_new_old = (V_new_old + V_new_old.T) / 2.0  # Force Symmetric
 
         # log likelihood
         L = Utility.get_log_gaussian_prob(error, np.zeros_like(error), y_predict_covar)

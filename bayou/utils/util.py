@@ -60,16 +60,17 @@ class Utility():
     @staticmethod
     def CollapseCross(x_list_t, x_list_tminus1, V_list_t_tminus1, W):
         n_components = len(W)
-        mu_x_t = 0.0
-        mu_x_tminus1 = 0.0
+        dim = x_list_t[0].shape[0]
+        mu_x_t = np.zeros((dim, 1))
+        mu_x_tminus1 = np.zeros((dim, 1))
 
         for i in range(n_components):
             mu_x_t += W[i] * x_list_t[i]
-            mu_x_tminus1 += W[i] * x_list_tminus1
+            mu_x_tminus1 += W[i] * x_list_tminus1[i]
 
         V_collapsed_t_tminus1 = np.zeros_like(V_list_t_tminus1[0])
         for i in range(n_components):
-            V_collapsed_t_tminus1 += W[i] * V_list_t_tminus1 + W[i] * ((x_list_t[i] - mu_x_t) @ (x_list_tminus1[i] - mu_x_tminus1))
+            V_collapsed_t_tminus1 += W[i] * V_list_t_tminus1[i] + W[i] * ((x_list_t[i] - mu_x_t) @ (x_list_tminus1[i] - mu_x_tminus1).T)
 
         return V_collapsed_t_tminus1
 
