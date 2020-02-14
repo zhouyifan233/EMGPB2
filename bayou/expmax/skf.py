@@ -157,6 +157,7 @@ class SKF(EM):
 
                 if diagonal_Q:
                     new_Q = np.diag(np.diag(new_Q))
+                # new_Q = (new_Q + new_Q.T)/2
                 models[m].Q = new_Q
                 print('model -- ' + str(m) + ' new_Q: \n' + str(models[m].Q))
 
@@ -195,6 +196,7 @@ class SKF(EM):
                         P_t += weights[t, m] * (V_t[t] + x_t[t] @ x_t[t].T)
                         W_sum += weights[t, m]
                 new_R = (y_t_times_y_t - models[m].H @ x_t_times_y_t - y_t_times_x_t @ models[m].H.T + models[m].H @ P_t @ models[m].H.T) / W_sum
+                # new_R = (new_R + new_R.T)/2
                 models[m].R = new_R
                 print('model -- ' + str(m) + ' new_R: \n' + str(models[m].R))
 

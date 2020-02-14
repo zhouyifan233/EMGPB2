@@ -13,8 +13,8 @@ def get_Q(Q_sig, dt=1):
     ])
     return Q
 
-def get_Q_RW(Q_sig, dt=1):
-    Q = Q_sig * np.eye(3)
+def get_Q_RW(Q_sig):
+    Q = (Q_sig ** 2) * np.eye(3)
     return Q
 
 def get_R(R_sig):
@@ -22,7 +22,7 @@ def get_R(R_sig):
     return R
 
 def get_R_RW(R_sig):
-    R = R_sig * np.eye(3)
+    R = (R_sig ** 2) * np.eye(3)
     return R
 
 # transformation matrix
@@ -44,13 +44,13 @@ H_RW = np.eye(3)
 # Create path
 def create_path_random_walk():
     # Time
-    t = 500
+    t = 100
     # Let's assume two Kalman filters
-    Q = [get_Q_RW(5.0), get_Q_RW(0.8)]
-    R = [get_R_RW(1.0), get_R_RW(0.1)]
+    Q = [get_Q_RW(1.0), get_Q_RW(8.0)]
+    R = [get_R_RW(10.0), get_R_RW(8.0)]
 
     kf_ind = 0
-    kf_change_pnt = [200]
+    kf_change_pnt = [50]
     x_tminus1 = np.asarray([[0.0], [0.0], [0.0]])
     path = []
     meas = []
@@ -92,11 +92,11 @@ def create_path_constant_volocity():
     # Time
     t = 300
     # Let's assume two Kalman filters
-    Q = [get_Q(1.0), get_Q(0.1)]
-    R = [get_R(1.0), get_R(0.01)]
+    Q = [get_Q(0.5), get_Q(0.1)]
+    R = [get_R(1.0), get_R(0.05)]
 
     kf_ind = 0
-    kf_change_pnt = [50]
+    kf_change_pnt = [80]
     x_tminus1 = np.asarray([[0.0], [0.0], [0.0], [0.0]])
     path = []
     meas = []
@@ -133,5 +133,5 @@ def create_path_constant_volocity():
     truth_df = pd.DataFrame(path)
     truth_df.to_csv('data/groundtruth2.csv', index=False, header=False)
 
-create_path_constant_volocity()
-#create_path_random_walk()
+#create_path_constant_volocity()
+create_path_random_walk()

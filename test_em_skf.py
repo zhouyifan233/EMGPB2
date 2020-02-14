@@ -76,8 +76,8 @@ def test_em_skf_2():
 
     gmmsequence = GMMSequence(measurements, initial_gmm_state)
 
-    m1 = LinearModel(F, 10.0*np.eye(3), H, 2.0*np.eye(3))
-    m2 = LinearModel(F, 1.0*np.eye(3), H, 1.0*np.eye(3))
+    m1 = LinearModel(F, (1.5 ** 2)*np.eye(3), H, (15 ** 2) *np.eye(3))
+    m2 = LinearModel(F, (7.0 ** 2)*np.eye(3), H, (15 ** 2)*np.eye(3))
     initial_models = [m1, m2]
 
     Z = np.ones([2, 2]) / 2
@@ -127,5 +127,5 @@ def test_em_skf_3():
 
     return new_models
 
-new_models = test_em_skf_1()
+new_models = test_em_skf_2()
 
