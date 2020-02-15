@@ -5,7 +5,7 @@ import pandas as pd
 
 
 def get_Q(Q_sig, dt=1):
-    Q = Q_sig * np.asarray([
+    Q = (Q_sig ** 2) * np.asarray([
         [(1/3)*np.power(dt, 3), 0, (1/2)*np.power(dt, 2), 0],
         [0, (1/3)*np.power(dt, 3), 0, (1/2)*np.power(dt, 2)],
         [(1/2) * np.power(dt, 2), 0, dt, 0],
@@ -18,7 +18,7 @@ def get_Q_RW(Q_sig):
     return Q
 
 def get_R(R_sig):
-    R = R_sig * np.eye(2)
+    R = (R_sig ** 2) * np.eye(2)
     return R
 
 def get_R_RW(R_sig):
@@ -27,16 +27,16 @@ def get_R_RW(R_sig):
 
 # transformation matrix
 F = np.asarray([
-    [1, 0, 1, 0],
-    [0, 1, 0, 1],
-    [0, 0, 1, 0],
-    [0, 0, 0, 1]
+    [1.0, 0.0, 1.0, 0.0],
+    [0.0, 1.0, 0.0, 1.0],
+    [0.0, 0.0, 1.0, 0.0],
+    [0.0, 0.0, 0.0, 1.0]
 ])
 F_RW = np.eye(3)
 # measurement model
 H = np.asanyarray([
-    [1, 0, 0, 0],
-    [0, 1, 0, 0]
+    [1.0, 0.0, 0.0, 0.0],
+    [0.0, 1.0, 0.0, 0.0]
 ])
 H_RW = np.eye(3)
 
@@ -44,13 +44,13 @@ H_RW = np.eye(3)
 # Create path
 def create_path_random_walk():
     # Time
-    t = 100
+    t = 600
     # Let's assume two Kalman filters
-    Q = [get_Q_RW(1.0), get_Q_RW(8.0)]
-    R = [get_R_RW(10.0), get_R_RW(8.0)]
+    Q = [get_Q_RW(0.5), get_Q_RW(5.0)]
+    R = [get_R_RW(1.0), get_R_RW(0.25)]
 
     kf_ind = 0
-    kf_change_pnt = [50]
+    kf_change_pnt = [300]
     x_tminus1 = np.asarray([[0.0], [0.0], [0.0]])
     path = []
     meas = []
@@ -90,13 +90,13 @@ def create_path_random_walk():
 
 def create_path_constant_volocity():
     # Time
-    t = 300
+    t = 200
     # Let's assume two Kalman filters
-    Q = [get_Q(0.5), get_Q(0.1)]
-    R = [get_R(1.0), get_R(0.05)]
+    Q = [get_Q(0.5), get_Q(5.0)]
+    R = [get_R(0.5), get_R(0.2)]
 
     kf_ind = 0
-    kf_change_pnt = [80]
+    kf_change_pnt = [90]
     x_tminus1 = np.asarray([[0.0], [0.0], [0.0], [0.0]])
     path = []
     meas = []
@@ -104,7 +104,6 @@ def create_path_constant_volocity():
         x_t_ = F @ x_tminus1
         x_t = np.random.multivariate_normal(np.squeeze(x_t_), Q[kf_ind])
         x_t = x_t.reshape((4, 1))
-        x_tminus1 = x_t
         y_t_ = H @ x_t
         y_t = np.random.multivariate_normal(np.squeeze(y_t_), R[kf_ind])
         y_t = y_t.reshape((2, 1))
@@ -112,6 +111,7 @@ def create_path_constant_volocity():
             kf_ind += 1
         path.append(x_t)
         meas.append(y_t)
+        x_tminus1 = x_t
     path = np.squeeze(np.asarray(path))
     meas = np.squeeze(np.asarray(meas))
     plt.figure()
@@ -133,5 +133,5 @@ def create_path_constant_volocity():
     truth_df = pd.DataFrame(path)
     truth_df.to_csv('data/groundtruth2.csv', index=False, header=False)
 
-#create_path_constant_volocity()
-create_path_random_walk()
+create_path_constant_volocity()
+# create_path_random_walk()
