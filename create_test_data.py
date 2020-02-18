@@ -46,8 +46,8 @@ def create_path_random_walk():
     # Time
     t = 800
     # Let's assume two Kalman filters
-    Q = [get_Q_RW(0.5), get_Q_RW(8.0), get_Q_RW(3.0)]
-    R = [get_R_RW(0.75), get_R_RW(0.25), get_R_RW(0.1)]
+    Q = [get_Q_RW(0.5), get_Q_RW(6.0), get_Q_RW(3.0)]
+    R = [get_R_RW(0.5), get_R_RW(0.35), get_R_RW(0.75)]
 
     kf_ind = 0
     kf_change_pnt = [400, 600]
@@ -90,13 +90,13 @@ def create_path_random_walk():
 
 def create_path_constant_volocity():
     # Time
-    t = 1000
+    t = 2500
     # Let's assume two Kalman filters
-    Q = [get_Q(1.5), get_Q(7.0), get_Q(3.5), get_Q(7.0), get_Q(1.5)]
-    R = [get_R(0.1), get_R(0.1), get_R(0.15), get_R(0.1), get_R(0.15)]
+    Q = [get_Q(0.5), get_Q(6.0), get_Q(2.0)]
+    R = [get_R(0.1), get_R(0.3), get_R(0.25)]
 
     kf_ind = 0
-    kf_change_pnt = [200, 300, 600, 700]
+    kf_change_pnt = [1000, 1500]
     x_tminus1 = np.asarray([[0.0], [0.0], [0.0], [0.0]])
     path = []
     meas = []
@@ -133,5 +133,5 @@ def create_path_constant_volocity():
     truth_df = pd.DataFrame(path)
     truth_df.to_csv('data/groundtruth2.csv', index=False, header=False)
 
-create_path_constant_volocity()
-# create_path_random_walk()
+# create_path_constant_volocity()
+create_path_random_walk()
