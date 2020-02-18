@@ -240,7 +240,9 @@ class SKF(EM):
         N = len(dataset)
         models = copy.deepcopy(initial_models)
         LLs = []
-
+        models_all = []
+        Z_all = []
+        i = 0
         for i in range(max_iters):
             # E-Step
             for n in range(N):
@@ -252,13 +254,16 @@ class SKF(EM):
             if len(LLs) > 1:
                 if Utility.check_lik_convergence(LLs[-1], LLs[-2], threshold):
                     print('iterations:', i)
-                    return models, Z, dataset, LLs
+                    return models_all, Z_all, dataset, LLs
 
             # M-Step
             models, Z = SKF.m_step(dataset, models, initial_models, Z,
                                    learn_H, learn_R, learn_A, learn_Q,
                                    learn_init_state, learn_Z, keep_Q_structure,
                                    diagonal_Q, wishart_prior)
+            models_all.append(models)
+            Z_all.append(Z)
             print('-----------------------------------------------')
         print('Converged. Iterations:', i)
-        return models, Z, dataset, LLs
+
+        return models_all, Z_all, dataset, LLs

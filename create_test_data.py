@@ -44,13 +44,13 @@ H_RW = np.eye(3)
 # Create path
 def create_path_random_walk():
     # Time
-    t = 600
+    t = 800
     # Let's assume two Kalman filters
-    Q = [get_Q_RW(0.5), get_Q_RW(5.0)]
-    R = [get_R_RW(1.0), get_R_RW(0.25)]
+    Q = [get_Q_RW(0.5), get_Q_RW(8.0), get_Q_RW(3.0)]
+    R = [get_R_RW(0.75), get_R_RW(0.25), get_R_RW(0.1)]
 
     kf_ind = 0
-    kf_change_pnt = [300]
+    kf_change_pnt = [400, 600]
     x_tminus1 = np.asarray([[0.0], [0.0], [0.0]])
     path = []
     meas = []
@@ -90,13 +90,13 @@ def create_path_random_walk():
 
 def create_path_constant_volocity():
     # Time
-    t = 200
+    t = 1000
     # Let's assume two Kalman filters
-    Q = [get_Q(0.5), get_Q(5.0)]
-    R = [get_R(0.5), get_R(0.2)]
+    Q = [get_Q(1.5), get_Q(7.0), get_Q(3.5), get_Q(7.0), get_Q(1.5)]
+    R = [get_R(0.1), get_R(0.1), get_R(0.15), get_R(0.1), get_R(0.15)]
 
     kf_ind = 0
-    kf_change_pnt = [90]
+    kf_change_pnt = [200, 300, 600, 700]
     x_tminus1 = np.asarray([[0.0], [0.0], [0.0], [0.0]])
     path = []
     meas = []
