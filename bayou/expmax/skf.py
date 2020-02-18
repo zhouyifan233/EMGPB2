@@ -205,7 +205,7 @@ class SKF(EM):
             z_denominator = 0
             for n in range(N):
                 sequence = dataset[n]
-                Pr_Stplus1_St_y1T = sequence.get_smothed_Pr_Stplus1_St_y1T()
+                Pr_Stplus1_St_y1T = sequence.get_smoothed_Pr_Stplus1_St_y1T()
                 Pr_Stplus1_St_y1T = Pr_Stplus1_St_y1T[1:]
                 z_numerator += np.sum(Pr_Stplus1_St_y1T, axis=0)
                 z_denominator += sequence.len
