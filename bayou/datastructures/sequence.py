@@ -152,7 +152,7 @@ class GMMSequence(Sequence):
     def get_n_components(self):
         return self.n_components
 
-    def get_smothed_Pr_Stplus1_St_y1T(self):
+    def get_smoothed_Pr_Stplus1_St_y1T(self):
         Pr_Stplus1_St_y1T = []
         for t in range(self.len):
             Pr_Stplus1_St_y1T.append(self.smoothed[t].Pr_Stplus1_St_y1T)

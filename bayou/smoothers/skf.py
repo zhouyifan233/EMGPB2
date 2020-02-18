@@ -70,7 +70,7 @@ class GPB2(SKF):
             states_t.append(state_j)
         new_gmm_state = GMM(states_t)
         new_gmm_state.weights = M_t_smoothed
-        new_gmm_state.Pr_Stplus1_St_y1T = W_t #     for estimating Z
+        new_gmm_state.Pr_Stplus1_St_y1T = W_t    #     for estimating Z
         # calculate x^{j(k)}_{t+1|T} this is an approximated approach
         x_j_k_tplus1_t = np.empty((N, N), dtype=np.ndarray)
         for j in range(N):
