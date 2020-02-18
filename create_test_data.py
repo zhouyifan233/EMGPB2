@@ -47,7 +47,7 @@ def create_path_random_walk():
     t = 800
     # Let's assume two Kalman filters
     Q = [get_Q_RW(0.5), get_Q_RW(6.0), get_Q_RW(3.0)]
-    R = [get_R_RW(0.5), get_R_RW(0.35), get_R_RW(0.75)]
+    R = [get_R_RW(0.5), get_R_RW(0.35), get_R_RW(0.25)]
 
     kf_ind = 0
     kf_change_pnt = [400, 600]
