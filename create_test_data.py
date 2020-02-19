@@ -13,8 +13,9 @@ def get_Q(Q_sig, dt=1):
     ])
     return Q
 
+
 def get_Q_RW(Q_sig):
-    Q = (Q_sig ** 2) * np.eye(3)
+    Q = (Q_sig ** 2) * np.diag([1, 1, 0, 0])
     return Q
 
 def get_R(R_sig):
@@ -22,89 +23,45 @@ def get_R(R_sig):
     return R
 
 def get_R_RW(R_sig):
-    R = (R_sig ** 2) * np.eye(3)
+    R = (R_sig ** 2) * np.eye(2)
     return R
 
 # transformation matrix
-F = np.asarray([
+F_CV = np.asarray([
     [1.0, 0.0, 1.0, 0.0],
     [0.0, 1.0, 0.0, 1.0],
     [0.0, 0.0, 1.0, 0.0],
     [0.0, 0.0, 0.0, 1.0]
 ])
-F_RW = np.eye(3)
+F_RW = np.eye(4)
 # measurement model
-H = np.asanyarray([
+H_CV = np.asanyarray([
     [1.0, 0.0, 0.0, 0.0],
     [0.0, 1.0, 0.0, 0.0]
 ])
-H_RW = np.eye(3)
-
-
-# Create path
-def create_path_random_walk():
-    # Time
-    t = 800
-    # Let's assume two Kalman filters
-    Q = [get_Q_RW(0.5), get_Q_RW(6.0), get_Q_RW(3.0)]
-    R = [get_R_RW(0.5), get_R_RW(0.35), get_R_RW(0.25)]
-
-    kf_ind = 0
-    kf_change_pnt = [400, 600]
-    x_tminus1 = np.asarray([[0.0], [0.0], [0.0]])
-    path = []
-    meas = []
-    for i in range(t):
-        x_t_ = F_RW @ x_tminus1
-        x_t = np.random.multivariate_normal(np.squeeze(x_t_), Q[kf_ind])
-        x_t = x_t.reshape((3, 1))
-        x_tminus1 = x_t
-        y_t_ = H_RW @ x_t
-        y_t = np.random.multivariate_normal(np.squeeze(y_t_), R[kf_ind])
-        y_t = y_t.reshape((3, 1))
-        if i in kf_change_pnt:
-            kf_ind += 1
-        path.append(x_t)
-        meas.append(y_t)
-    path = np.squeeze(np.asarray(path))
-    meas = np.squeeze(np.asarray(meas))
-    plt.figure()
-    plt.plot(meas[:,0], meas[:,1], 'r-o', label='measurements')
-    plt.plot(path[:,0], path[:,1], 'b-o', label='True trajectory')
-    plt.legend()
-
-    print('F:')
-    print(F)
-    print('H:')
-    print(H)
-    for i in range(len(kf_change_pnt)+1):
-        print('Q_' + str(i) + ': ')
-        print(Q[i])
-        print('R_' + str(i) + ': ')
-        print(R[i])
-    meas_df = pd.DataFrame(meas)
-    meas_df.to_csv('data/measurement3.csv', index=False, header=False)
-    truth_df = pd.DataFrame(path)
-    truth_df.to_csv('data/groundtruth3.csv', index=False, header=False)
+H_RW = np.asanyarray([
+    [1.0, 0.0, 0.0, 0.0],
+    [0.0, 1.0, 0.0, 0.0]
+])
 
 
 def create_path_constant_volocity():
     # Time
-    t = 2500
+    t = 400
     # Let's assume two Kalman filters
-    Q = [get_Q(0.5), get_Q(6.0), get_Q(2.0)]
-    R = [get_R(0.1), get_R(0.3), get_R(0.25)]
+    Q = [get_Q(1.0), get_Q(6.0)]
+    R = [get_R(0.5), get_R(0.5)]
 
     kf_ind = 0
-    kf_change_pnt = [1000, 1500]
+    kf_change_pnt = [180]
     x_tminus1 = np.asarray([[0.0], [0.0], [0.0], [0.0]])
     path = []
     meas = []
     for i in range(t):
-        x_t_ = F @ x_tminus1
+        x_t_ = F_CV @ x_tminus1
         x_t = np.random.multivariate_normal(np.squeeze(x_t_), Q[kf_ind])
         x_t = x_t.reshape((4, 1))
-        y_t_ = H @ x_t
+        y_t_ = H_CV @ x_t
         y_t = np.random.multivariate_normal(np.squeeze(y_t_), R[kf_ind])
         y_t = y_t.reshape((2, 1))
         if i in kf_change_pnt:
@@ -120,9 +77,9 @@ def create_path_constant_volocity():
     plt.legend()
 
     print('F:')
-    print(F)
+    print(F_CV)
     print('H:')
-    print(H)
+    print(H_CV)
     for i in range(len(kf_change_pnt) + 1):
         print('Q_' + str(i) + ': ')
         print(Q[i])
@@ -133,5 +90,103 @@ def create_path_constant_volocity():
     truth_df = pd.DataFrame(path)
     truth_df.to_csv('data/groundtruth2.csv', index=False, header=False)
 
+
+# Create path
+def create_path_random_walk():
+    # Time
+    t = 400
+    # Let's assume two Kalman filters
+    Q = [get_Q_RW(1.0), get_Q_RW(8.0)]
+    R = [get_R_RW(0.8), get_R_RW(1.0)]
+
+    kf_ind = 0
+    kf_change_pnt = [180]
+    x_tminus1 = np.asarray([[0.0], [0.0], [0.0], [0.0]])
+    path = []
+    meas = []
+    for i in range(t):
+        x_t_ = F_RW @ x_tminus1
+        x_t = np.random.multivariate_normal(np.squeeze(x_t_), Q[kf_ind])
+        x_t = x_t.reshape((4, 1))
+        x_tminus1 = x_t
+        y_t_ = H_RW @ x_t
+        y_t = np.random.multivariate_normal(np.squeeze(y_t_), R[kf_ind])
+        y_t = y_t.reshape((2, 1))
+        if i in kf_change_pnt:
+            kf_ind += 1
+        path.append(x_t)
+        meas.append(y_t)
+    path = np.squeeze(np.asarray(path))
+    meas = np.squeeze(np.asarray(meas))
+    plt.figure()
+    plt.plot(meas[:,0], meas[:,1], 'r-o', label='measurements')
+    plt.plot(path[:,0], path[:,1], 'b-o', label='True trajectory')
+    plt.legend()
+
+    print('F:')
+    print(F_RW)
+    print('H:')
+    print(H_RW)
+    for i in range(len(kf_change_pnt)+1):
+        print('Q_' + str(i) + ': ')
+        print(Q[i])
+        print('R_' + str(i) + ': ')
+        print(R[i])
+    meas_df = pd.DataFrame(meas)
+    meas_df.to_csv('data/measurement3.csv', index=False, header=False)
+    truth_df = pd.DataFrame(path)
+    truth_df.to_csv('data/groundtruth3.csv', index=False, header=False)
+
+
+def create_path_cv_rw():
+    # Time
+    t = 300
+    # Let's assume two Kalman filters
+    Q = [get_Q_RW(5.0), get_Q(0.5)]
+    R = [get_R_RW(0.25), get_R(0.5)]
+    F = [F_RW, F_CV]
+    H = [H_RW, H_CV]
+
+    kf_ind = 0
+    kf_change_pnt = [120]
+    x_tminus1 = np.asarray([[0.0], [0.0], [0.0], [0.0]])
+    path = []
+    meas = []
+    for i in range(t):
+        x_t_ = F[kf_ind] @ x_tminus1
+        x_t = np.random.multivariate_normal(np.squeeze(x_t_), Q[kf_ind])
+        x_t = x_t.reshape((4, 1))
+        y_t_ = H[kf_ind] @ x_t
+        y_t = np.random.multivariate_normal(np.squeeze(y_t_), R[kf_ind])
+        y_t = y_t.reshape((2, 1))
+        if i in kf_change_pnt:
+            kf_ind += 1
+        path.append(x_t)
+        meas.append(y_t)
+        x_tminus1 = x_t
+    path = np.squeeze(np.asarray(path))
+    meas = np.squeeze(np.asarray(meas))
+    plt.figure()
+    plt.plot(meas[:, 0], meas[:, 1], 'r-o', label='measurements')
+    plt.plot(path[:, 0], path[:, 1], 'b-o', label='True trajectory')
+    plt.legend()
+
+    print('F:')
+    print(F_CV)
+    print('H:')
+    print(H_CV)
+    for i in range(len(kf_change_pnt) + 1):
+        print('Q_' + str(i) + ': ')
+        print(Q[i])
+        print('R_' + str(i) + ': ')
+        print(R[i])
+    meas_df = pd.DataFrame(meas)
+    meas_df.to_csv('data/measurement4.csv', index=False, header=False)
+    truth_df = pd.DataFrame(path)
+    truth_df.to_csv('data/groundtruth4.csv', index=False, header=False)
+
 # create_path_constant_volocity()
 create_path_random_walk()
+# create_path_cv_rw()
+
+

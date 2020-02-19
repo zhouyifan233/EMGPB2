@@ -60,6 +60,7 @@ class Kalman(LinearGaussian):
 
         # log likelihood
         L = Utility.get_log_gaussian_prob(error, np.zeros_like(error), y_predict_covar)
+        # L = Utility.get_log_gaussian_prob((new_x - x_predict), np.zeros_like(new_x), V_predict)
 
         return Gaussian(mean=new_x, covar=new_V), V_new_old, L
 

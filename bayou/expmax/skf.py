@@ -100,6 +100,7 @@ class SKF(EM):
                 for n in range(N):
                     sequence = dataset[n]
                     weights = sequence.get_smooth_weights()
+                    weights = Utility.annealing_weights(weights)
                     x_t = np.array([state.mean for state in sequence.smoothed_collapsed])
                     V_t = np.array([state.covar for state in sequence.smoothed_collapsed])
                     V_t_tminus1 = sequence.smoothed_crossvar_collapsed
@@ -124,16 +125,16 @@ class SKF(EM):
                 for n in range(N):
                     sequence = dataset[n]
                     weights = sequence.get_smooth_weights()
+                    weights = Utility.annealing_weights(weights)
                     x_t = np.array([state.mean for state in sequence.smoothed_collapsed])
                     V_t = np.array([state.covar for state in sequence.smoothed_collapsed])
                     V_t_tminus1 = sequence.smoothed_crossvar_collapsed
-
                     for t in range(1, sequence.len):
-                            P_t += weights[t, m] * (V_t[t] + x_t[t] @ x_t[t].T)
-                            P_tminus1 += weights[t, m] * (V_t[t-1] + x_t[t-1] @ x_t[t-1].T)
-                            P_tminus1_t += weights[t, m] * (V_t_tminus1[t] + x_t[t-1] @ x_t[t].T)
-                            P_t_tminus1 += weights[t, m] * (V_t_tminus1[t] + x_t[t] @ x_t[t-1].T)
-                            W_sum += weights[t, m]
+                        P_t += weights[t, m] * (V_t[t] + x_t[t] @ x_t[t].T)
+                        P_tminus1 += weights[t, m] * (V_t[t-1] + x_t[t-1] @ x_t[t-1].T)
+                        P_tminus1_t += weights[t, m] * (V_t_tminus1[t] + x_t[t-1] @ x_t[t].T)
+                        P_t_tminus1 += weights[t, m] * (V_t_tminus1[t] + x_t[t] @ x_t[t-1].T)
+                        W_sum += weights[t, m]
 
                 if wishart_prior:
                     alpha = 0.1 * data_cardinality
@@ -168,6 +169,7 @@ class SKF(EM):
                 for n in range(N):
                     sequence = dataset[n]
                     weights = sequence.get_smooth_weights()
+                    weights = Utility.annealing_weights(weights)
                     x_t = np.array([state.mean for state in sequence.smoothed_collapsed])
                     V_t = np.array([state.covar for state in sequence.smoothed_collapsed])
                     for t in range(1, sequence.len):
@@ -187,6 +189,7 @@ class SKF(EM):
                 for n in range(N):
                     sequence = dataset[n]
                     weights = sequence.get_smooth_weights()
+                    weights = Utility.annealing_weights(weights)
                     x_t = np.array([state.mean for state in sequence.smoothed_collapsed])
                     V_t = np.array([state.covar for state in sequence.smoothed_collapsed])
                     for t in range(0, sequence.len):

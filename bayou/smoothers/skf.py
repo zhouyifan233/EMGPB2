@@ -69,6 +69,7 @@ class GPB2(SKF):
                                        transforms=smooth_gmm_state_tplus1.transforms[:, j])
             states_t.append(state_j)
         new_gmm_state = GMM(states_t)
+        # print(M_t_smoothed)
         new_gmm_state.weights = M_t_smoothed
         new_gmm_state.Pr_Stplus1_St_y1T = W_t    #     for estimating Z
         # calculate x^{j(k)}_{t+1|T} this is an approximated approach

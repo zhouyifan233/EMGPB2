@@ -57,6 +57,7 @@ class GPB2(SKF):
             states_j.append(state_j)
 
         new_gmm_state = GMM(states_j)
+        # print(M_t)
         new_gmm_state.weights = M_t
 
         return new_gmm_state, VV_i_j_t_tminus1, L_i_j_t, M_t, measurement_likelihood

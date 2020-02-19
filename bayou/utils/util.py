@@ -93,3 +93,13 @@ class Utility():
             V += weights[n] * (transforms[n] @ components[n].covar @ transforms[n].T + diff @ diff.T)
 
         return Gaussian(mean=x, covar=V)
+
+
+    @staticmethod
+    def annealing_weights(weights: np.ndarray, beta=1):
+        anneal_weights = np.power(weights, beta)
+        new_weights = np.zeros_like(weights)
+        for r in range(anneal_weights.shape[0]):
+            new_weights[r, :] = anneal_weights[r, :] / np.sum(anneal_weights[r, :])
+
+        return new_weights
