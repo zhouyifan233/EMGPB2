@@ -38,8 +38,8 @@ def test_em_skf_cv():
     """ 
         
     """
-    g1 = Gaussian(np.zeros([4, 1]), 9.0 * np.eye(4))
-    g2 = Gaussian(np.zeros([4, 1]), 9.0 * np.eye(4))
+    g1 = Gaussian(np.zeros([4, 1]), 10.0 * np.eye(4))
+    g2 = Gaussian(np.zeros([4, 1]), 10.0 * np.eye(4))
     initial_gmm_state = GMM([g1, g2])
 
     # measurements = 5 * np.random.randn(200, 2, 1) + 1
@@ -49,8 +49,8 @@ def test_em_skf_cv():
 
     gmmsequence = GMMSequence(measurements, initial_gmm_state)
 
-    m1 = LinearModel(F, get_Q(8.0), H, (0.5 ** 2) * np.eye(2))
-    m2 = LinearModel(F, get_Q(15.0), H, (0.5 ** 2) * np.eye(2))
+    m1 = LinearModel(F, get_Q(0.5), H, (0.5 ** 2) * np.eye(2))
+    m2 = LinearModel(F, get_Q(3.0), H, (0.5 ** 2) * np.eye(2))
     initial_models = [m1, m2]
 
     Z = np.ones((2, 2)) / 2
@@ -62,8 +62,8 @@ def test_em_skf_cv():
     dataset = [gmmsequence]
 
     models_all, Z_all, dataset, LL = SKF.EM(dataset, initial_models, Z,
-                                        max_iters=100, threshold=0.00001, learn_H=True, learn_R=True,
-                                        learn_A=False, learn_Q=True, learn_init_state=False, learn_Z=True,
+                                        max_iters=100, threshold=1e-6, learn_H=True, learn_R=True,
+                                        learn_A=True, learn_Q=True, learn_init_state=False, learn_Z=True,
                                         keep_Q_structure=False, diagonal_Q=False, wishart_prior=False)
 
     return models_all, Z_all
@@ -87,8 +87,8 @@ def test_em_skf_rw():
 
     gmmsequence = GMMSequence(measurements, initial_gmm_state)
 
-    m1 = LinearModel(F, (2.0 ** 2) * np.eye(4), H, (1.5 ** 2) * np.eye(2))
-    m2 = LinearModel(F, (4.0 ** 2) * np.eye(4), H, (1.5 ** 2) * np.eye(2))
+    m1 = LinearModel(F, (2.0 ** 2) * np.eye(4), H, (1.0 ** 2) * np.eye(2))
+    m2 = LinearModel(F, (3.0 ** 2) * np.eye(4), H, (1.0 ** 2) * np.eye(2))
     initial_models = [m1, m2]
 
     Z = np.ones([2, 2]) / 2
@@ -96,8 +96,8 @@ def test_em_skf_rw():
     dataset = [gmmsequence]
 
     models_all, Z_all, dataset, LL = SKF.EM(dataset, initial_models, Z,
-                                        max_iters=100, threshold=0.000001, learn_H=False, learn_R=True,
-                                        learn_A=False, learn_Q=True, learn_init_state=False, learn_Z=True,
+                                        max_iters=100, threshold=0.000001, learn_H=True, learn_R=True,
+                                        learn_A=True, learn_Q=True, learn_init_state=False, learn_Z=True,
                                         keep_Q_structure=False, diagonal_Q=False, wishart_prior=False)
 
 

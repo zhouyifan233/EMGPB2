@@ -79,7 +79,7 @@ class Utility():
     def Collapse(components: list, weights: list, transforms: list):
         n_components = len(components)
         if n_components < 2:
-            print('There are less than 2 components. Not necessary for collapsing.')
+            # print('There are less than 2 components. Not necessary for collapsing.')
             return components[0]
 
         x = 0.0
@@ -99,7 +99,18 @@ class Utility():
     def annealing_weights(weights: np.ndarray, beta=1):
         anneal_weights = np.power(weights, beta)
         new_weights = np.zeros_like(weights)
-        for r in range(anneal_weights.shape[0]):
-            new_weights[r, :] = anneal_weights[r, :] / np.sum(anneal_weights[r, :])
+        if anneal_weights.ndim == 1:
+            new_weight = anneal_weights / np.sum(anneal_weights)
+            for i, ele in enumerate(new_weight):
+                if ele <= 1e-4:
+                    new_weight[i] = 1e-4
+            new_weights = new_weight
+        else:
+            for r in range(anneal_weights.shape[0]):
+                new_weight = anneal_weights[r, :] / np.sum(anneal_weights[r, :])
+                for i, ele in enumerate(new_weight):
+                    if ele <= 1e-4:
+                        new_weight[i] = 1e-4
+                new_weights[r, :] = new_weight
 
         return new_weights

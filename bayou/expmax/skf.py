@@ -94,13 +94,18 @@ class SKF(EM):
                     Q_terms[m][2] += term_2
         '''
 
+        old_H = [model_.H for model_ in models]
+        old_R = [model_.R for model_ in models]
+        old_A = [model_.A for model_ in models]
+        old_Q = [model_.Q for model_ in models]
+
         # Update Model
         if learn_A:
             for m in range(n_models):
                 for n in range(N):
                     sequence = dataset[n]
                     weights = sequence.get_smooth_weights()
-                    weights = Utility.annealing_weights(weights)
+                    # weights = Utility.annealing_weights(weights)
                     x_t = np.array([state.mean for state in sequence.smoothed_collapsed])
                     V_t = np.array([state.covar for state in sequence.smoothed_collapsed])
                     V_t_tminus1 = sequence.smoothed_crossvar_collapsed
@@ -108,8 +113,8 @@ class SKF(EM):
                     P_t_tminus1 = 0.0
                     P_tminus1 = 0.0
                     for t in range(1, sequence.len):
+                        P_t_tminus1 += weights[t, m] * (V_t_tminus1[t] + x_t[t] @ x_t[t - 1].T)
                         P_tminus1 += weights[t, m] * (V_t[t-1] + x_t[t-1] @ x_t[t-1].T)
-                        P_t_tminus1 += weights[t, m] * (V_t_tminus1[t] + x_t[t] @ x_t[t-1].T)
                     new_A = P_t_tminus1 @ linalg.inv(P_tminus1)
                     models[m].A = new_A
 
@@ -125,7 +130,7 @@ class SKF(EM):
                 for n in range(N):
                     sequence = dataset[n]
                     weights = sequence.get_smooth_weights()
-                    weights = Utility.annealing_weights(weights)
+                    # weights = Utility.annealing_weights(weights)
                     x_t = np.array([state.mean for state in sequence.smoothed_collapsed])
                     V_t = np.array([state.covar for state in sequence.smoothed_collapsed])
                     V_t_tminus1 = sequence.smoothed_crossvar_collapsed
@@ -139,12 +144,15 @@ class SKF(EM):
                 if wishart_prior:
                     alpha = 0.1 * data_cardinality
                     numerator = (
-                        alpha * np.eye(models[m].Q.shape[0]) +
-                        P_t - models[m].A @ P_tminus1_t - P_t_tminus1 @ models[m].A.T + models[m].A @ P_tminus1 @ models[m].A.T
+                        alpha * np.eye(old_Q[m].shape[0]) +
+                        P_t - old_A[m] @ P_tminus1_t - P_t_tminus1 @ old_A[m].T + old_A[m] @ P_tminus1 @ old_A[m].T
                     )
                     denominator = (alpha + W_sum)
                 else:
-                    numerator = P_t - models[m].A @ P_tminus1_t - P_t_tminus1 @ models[m].A.T + models[m].A @ P_tminus1 @ models[m].A.T
+                    if learn_A:
+                        numerator = P_t - models[m].A @ P_t_tminus1.T
+                    else:
+                        numerator = P_t - old_A[m] @ P_tminus1_t - P_t_tminus1 @ old_A[m].T + old_A[m] @ P_tminus1 @ old_A[m].T
                     denominator = W_sum
                     # print(numerator)
                     # print(denominator)
@@ -169,12 +177,12 @@ class SKF(EM):
                 for n in range(N):
                     sequence = dataset[n]
                     weights = sequence.get_smooth_weights()
-                    weights = Utility.annealing_weights(weights)
+                    # weights = Utility.annealing_weights(weights)
                     x_t = np.array([state.mean for state in sequence.smoothed_collapsed])
                     V_t = np.array([state.covar for state in sequence.smoothed_collapsed])
                     for t in range(1, sequence.len):
-                            y_t_times_x_t += weights[t, m] * sequence.measurements[t] @ x_t[t].T
-                            P_t += weights[t, m] * (V_t[t] + x_t[t] @ x_t[t].T)
+                        y_t_times_x_t += weights[t, m] * (sequence.measurements[t] @ x_t[t].T)
+                        P_t += weights[t, m] * (V_t[t] + x_t[t] @ x_t[t].T)
                 new_H = y_t_times_x_t @ linalg.inv(P_t)
                 models[m].H = new_H
                 print('model -- ' + str(m) + ' new_H: \n' + str(models[m].H))
@@ -189,7 +197,7 @@ class SKF(EM):
                 for n in range(N):
                     sequence = dataset[n]
                     weights = sequence.get_smooth_weights()
-                    weights = Utility.annealing_weights(weights)
+                    # weights = Utility.annealing_weights(weights)
                     x_t = np.array([state.mean for state in sequence.smoothed_collapsed])
                     V_t = np.array([state.covar for state in sequence.smoothed_collapsed])
                     for t in range(0, sequence.len):
@@ -198,7 +206,12 @@ class SKF(EM):
                         y_t_times_x_t += weights[t, m] * sequence.measurements[t] @ x_t[t].T
                         P_t += weights[t, m] * (V_t[t] + x_t[t] @ x_t[t].T)
                         W_sum += weights[t, m]
-                new_R = (y_t_times_y_t - models[m].H @ x_t_times_y_t - y_t_times_x_t @ models[m].H.T + models[m].H @ P_t @ models[m].H.T) / W_sum
+                denominator = W_sum
+                if learn_H:
+                    numerator = y_t_times_y_t - (models[m].H @ x_t_times_y_t)
+                else:
+                    numerator = y_t_times_y_t - old_H[m] @ x_t_times_y_t - y_t_times_x_t @ old_H[m].T + old_H[m] @ P_t @ old_H[m].T
+                new_R = numerator / denominator
                 # new_R = (new_R + new_R.T)/2
                 models[m].R = new_R
                 print('model -- ' + str(m) + ' new_R: \n' + str(models[m].R))

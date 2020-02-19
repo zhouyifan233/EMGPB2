@@ -45,16 +45,62 @@ H_RW = np.asanyarray([
 ])
 
 
+def create_path_constant_volocity_one_model():
+    # Time
+    t = 200
+    # Let's assume two Kalman filters
+    Q = [get_Q(0.5)]
+    R = [get_R(1.0)]
+
+    kf_ind = 0
+    kf_change_pnt = []
+    x_tminus1 = np.asarray([[0.0], [0.0], [0.0], [0.0]])
+    path = []
+    meas = []
+    for i in range(t):
+        x_t_ = F_CV @ x_tminus1
+        x_t = np.random.multivariate_normal(np.squeeze(x_t_), Q[kf_ind])
+        x_t = x_t.reshape((4, 1))
+        y_t_ = H_CV @ x_t
+        y_t = np.random.multivariate_normal(np.squeeze(y_t_), R[kf_ind])
+        y_t = y_t.reshape((2, 1))
+        if i in kf_change_pnt:
+            kf_ind += 1
+        path.append(x_t)
+        meas.append(y_t)
+        x_tminus1 = x_t
+    path = np.squeeze(np.asarray(path))
+    meas = np.squeeze(np.asarray(meas))
+    plt.figure()
+    plt.plot(meas[:, 0], meas[:, 1], 'r-o', label='measurements')
+    plt.plot(path[:, 0], path[:, 1], 'b-o', label='True trajectory')
+    plt.legend()
+
+    print('F:')
+    print(F_CV)
+    print('H:')
+    print(H_CV)
+    for i in range(len(kf_change_pnt) + 1):
+        print('Q_' + str(i) + ': ')
+        print(Q[i])
+        print('R_' + str(i) + ': ')
+        print(R[i])
+    meas_df = pd.DataFrame(meas)
+    meas_df.to_csv('data/measurement1.csv', index=False, header=False)
+    truth_df = pd.DataFrame(path)
+    truth_df.to_csv('data/groundtruth1.csv', index=False, header=False)
+
+
 def create_path_constant_volocity():
     # Time
     t = 400
     # Let's assume two Kalman filters
-    Q = [get_Q(1.0), get_Q(6.0)]
-    R = [get_R(0.5), get_R(0.5)]
+    Q = [get_Q(1.0), get_Q(3.0), get_Q(1.0)]
+    R = [get_R(0.55), get_R(0.7), get_R(0.35)]
 
     kf_ind = 0
-    kf_change_pnt = [180]
-    x_tminus1 = np.asarray([[0.0], [0.0], [0.0], [0.0]])
+    kf_change_pnt = [150, 250]
+    x_tminus1 = np.asarray([[0.0], [0.0], [0.1], [0.1]])
     path = []
     meas = []
     for i in range(t):
@@ -185,8 +231,9 @@ def create_path_cv_rw():
     truth_df = pd.DataFrame(path)
     truth_df.to_csv('data/groundtruth4.csv', index=False, header=False)
 
-# create_path_constant_volocity()
-create_path_random_walk()
+# create_path_constant_volocity_one_model()
+create_path_constant_volocity()
+# create_path_random_walk()
 # create_path_cv_rw()
 
 

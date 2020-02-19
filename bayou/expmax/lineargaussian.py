@@ -127,7 +127,6 @@ class LinearGaussian(EM):
                 for t in range(1, sequence.len):
                     P_t_tminus1 += smooth_VVs[t] + smoothed_x[t] @ smoothed_x[t - 1].T
                     P_tminus1 += smoothed_V[t - 1] + smoothed_x[t - 1] @ smoothed_x[t - 1].T
-                for t in range(1, sequence.len):
                     P_t += smoothed_V[t] + smoothed_x[t] @ smoothed_x[t].T
                     P_tminus1_t += smooth_VVs[t] + smoothed_x[t - 1] @ smoothed_x[t].T
             new_A = P_t_tminus1 @ linalg.inv(P_tminus1)
@@ -156,7 +155,6 @@ class LinearGaussian(EM):
                 sequence = dataset[n]
                 smoothed_x = np.array([state.mean for state in sequence.smoothed])
                 smoothed_V = np.array([state.covar for state in sequence.smoothed])
-                smooth_VVs = sequence.smooth_crossvar
                 for t in range(0, sequence.len):
                     y_t_times_x_t += sequence.measurements[t] @ smoothed_x[t].T
                     P_t += smoothed_V[t] + smoothed_x[t] @ smoothed_x[t].T
@@ -173,7 +171,6 @@ class LinearGaussian(EM):
                 sequence = dataset[n]
                 smoothed_x = np.array([state.mean for state in sequence.smoothed])
                 smoothed_V = np.array([state.covar for state in sequence.smoothed])
-                smooth_VVs = sequence.smooth_crossvar
                 for t in range(0, sequence.len):
                     y_t_times_x_t += sequence.measurements[t] @ smoothed_x[t].T
                     P_t += smoothed_V[t] + smoothed_x[t] @ smoothed_x[t].T
