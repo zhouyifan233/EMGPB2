@@ -20,79 +20,13 @@ class SKF(EM):
     @staticmethod
     def m_step(dataset, models, initial_models, Z,
                learn_H, learn_R, learn_A, learn_Q, learn_init_state, learn_Z,
-               keep_Q_structure, diagonal_Q, wishart_prior):
+               diagonal_Q, wishart_prior):
 
         N = len(dataset)
         data_cardinality = 0
         for n in range(N):
             data_cardinality += dataset[n].len
         n_models = len(models)
-
-        '''
-        H_terms = np.empty([n_models], dtype=list)
-        R_terms = np.empty([n_models], dtype=list)
-        A_terms = np.empty([n_models], dtype=list)
-        Q_terms = np.empty([n_models], dtype=list)
-        for n in range(n_models):
-            H_terms[n] = [0, 0]
-            R_terms[n] = [0, 0, 0, 0]
-            A_terms[n] = [0, 0]
-            Q_terms[n] = [0, 0, 0]
-        for n in range(N):
-            sequence = dataset[n]
-            
-            for m in range(n_models):
-                weights = np.exp(sequence.get_smooth_weights(m))
-                x_T = np.array([state.components[m].mean for state in sequence.smoothed])
-                V_T = np.array([state.components[m].covar for state in sequence.smoothed])
-
-                if learn_H or learn_R:
-                    term_0 = 0
-                    term_1 = 0
-                    for t in range(0, sequence.len):
-                        term_0 += weights[t] * sequence.measurements[t] @ x_T[t].T
-                        term_1 += weights[t] * (V_T[t] + x_T[t] @ x_T[t].T)
-                    H_terms[m][0] += term_0
-                    H_terms[m][1] += term_1
-
-                if learn_R:
-                    term_0 = 0
-                    term_1 = 0
-                    term_2 = 0
-                    term_3 = 0
-                    for t in range(0, sequence.len):
-                        term_1 += weights[t] * sequence.measurements[t] @ sequence.measurements[t].T
-                        term_2 += weights[t] * x_T[t] @ sequence.measurements[t].T
-                        term_3 += weights[t] * sequence.measurements[t] @ x_T[t].T
-                        term_0 += weights[t]
-                    R_terms[m][0] += term_0
-                    R_terms[m][1] += term_1
-                    R_terms[m][2] += term_2
-                    R_terms[m][3] += term_3
-
-                if learn_A or learn_Q:
-                    term_0 = 0
-                    term_1 = 0
-                    for t in range(1, sequence.len):
-                        for j in range(n_models):
-                            term_0 += np.exp(sequence.smooth_joint_pr[t, j, m]) * (sequence.smooth_crossvar[j, m][t] + x_T[t] @ sequence.smooth_j_k_t[t - 1, j, m].mean.T)
-                            term_1 += np.exp(sequence.smooth_joint_pr[t, j, m]) * (V_T[t - 1] + x_T[t - 1] @ x_T[t - 1].T)
-                    A_terms[m][0] += term_0
-                    A_terms[m][1] += term_1
-
-                if learn_Q:
-                    term_0 = 0
-                    term_1 = 0
-                    term_2 = 0
-                    for t in range(1, sequence.len):
-                        for j in range(n_models):
-                            term_1 += np.exp(sequence.smooth_joint_pr[t, j, m]) * (V_T[t] + x_T[t] @ x_T[t].T)
-                            term_2 += np.exp(sequence.smooth_joint_pr[t, j, m]) * (sequence.smooth_crossvar[j, m][t] + sequence.smooth_j_k_t[t - 1, j, m].mean @ x_T[t].T)
-                            term_0 += np.exp(sequence.smooth_joint_pr[t, j, m])
-                    Q_terms[m][0] += term_0
-                    Q_terms[m][1] += term_1
-                    Q_terms[m][2] += term_2
-        '''
 
         old_H = [model_.H for model_ in models]
         old_R = [model_.R for model_ in models]
@@ -109,7 +43,7 @@ class SKF(EM):
                     x_t = np.array([state.mean for state in sequence.smoothed_collapsed])
                     V_t = np.array([state.covar for state in sequence.smoothed_collapsed])
                     V_t_tminus1 = sequence.smoothed_crossvar_collapsed
-
+                    transforms_ = [s_.transforms for s_ in sequence.smoothed]
                     P_t_tminus1 = 0.0
                     P_tminus1 = 0.0
                     for t in range(1, sequence.len):
@@ -134,6 +68,7 @@ class SKF(EM):
                     x_t = np.array([state.mean for state in sequence.smoothed_collapsed])
                     V_t = np.array([state.covar for state in sequence.smoothed_collapsed])
                     V_t_tminus1 = sequence.smoothed_crossvar_collapsed
+                    transforms_ = [s_.transforms for s_ in sequence.smoothed]
                     for t in range(1, sequence.len):
                         P_t += weights[t, m] * (V_t[t] + x_t[t] @ x_t[t].T)
                         P_tminus1 += weights[t, m] * (V_t[t-1] + x_t[t-1] @ x_t[t-1].T)
@@ -154,15 +89,7 @@ class SKF(EM):
                     else:
                         numerator = P_t - old_A[m] @ P_tminus1_t - P_t_tminus1 @ old_A[m].T + old_A[m] @ P_tminus1 @ old_A[m].T
                     denominator = W_sum
-                    # print(numerator)
-                    # print(denominator)
-                if keep_Q_structure:
-                    structure = initial_models[m].get_Q_structure()
-                    inv_struct = linalg.inv(structure)
-                    q = np.trace(inv_struct @ numerator) / denominator
-                    new_Q = structure * q
-                else:
-                    new_Q = numerator / denominator
+                new_Q = numerator / denominator
 
                 if diagonal_Q:
                     new_Q = np.diag(np.diag(new_Q))
@@ -180,6 +107,7 @@ class SKF(EM):
                     weights = Utility.annealing_weights(weights)
                     x_t = np.array([state.mean for state in sequence.smoothed_collapsed])
                     V_t = np.array([state.covar for state in sequence.smoothed_collapsed])
+                    transforms_ = [s_.transforms for s_ in sequence.smoothed]
                     for t in range(1, sequence.len):
                         y_t_times_x_t += weights[t, m] * (sequence.measurements[t] @ x_t[t].T)
                         P_t += weights[t, m] * (V_t[t] + x_t[t] @ x_t[t].T)
@@ -200,6 +128,7 @@ class SKF(EM):
                     weights = Utility.annealing_weights(weights)
                     x_t = np.array([state.mean for state in sequence.smoothed_collapsed])
                     V_t = np.array([state.covar for state in sequence.smoothed_collapsed])
+                    transforms_ = [s_.transforms for s_ in sequence.smoothed]
                     for t in range(0, sequence.len):
                         y_t_times_y_t += weights[t, m] * sequence.measurements[t] @ sequence.measurements[t].T
                         x_t_times_y_t += weights[t, m] * x_t[t] @ sequence.measurements[t].T
@@ -238,7 +167,7 @@ class SKF(EM):
     @staticmethod
     def EM(dataset, initial_models, Z, max_iters=20, threshold=0.0001,
            learn_H=True, learn_R=True, learn_A=True, learn_Q=True, learn_init_state=True, learn_Z=True,
-           keep_Q_structure=False, diagonal_Q=False, wishart_prior=False):
+           diagonal_Q=False, wishart_prior=False):
         """ Expectation-Maximization for a Linear Gaussian State-Space model.
 
         Parameters
@@ -275,7 +204,7 @@ class SKF(EM):
             # M-Step
             models, Z = SKF.m_step(dataset, models, initial_models, Z,
                                    learn_H, learn_R, learn_A, learn_Q,
-                                   learn_init_state, learn_Z, keep_Q_structure,
+                                   learn_init_state, learn_Z,
                                    diagonal_Q, wishart_prior)
             models_all.append(models)
             Z_all.append(Z)

@@ -32,7 +32,7 @@ class GPB2(SKF):
                  smoothed_VV_j_k_tplus1_t[j, k]) = RTS.smooth(smooth_gmm_state_tplus1.components[k],
                                                           filtered_gmm_state_t.components[j],
                                                           filtered_gmm_state_tplus1.components[k],
-                                                          VV_j_k_tplus1_t[j, k],                    # Swapped
+                                                          VV_j_k_tplus1_t[j, k],
                                                           models[k],
                                                           smooth_gmm_state_tplus1.transforms[j, k])
         # get M_{t|t}
@@ -123,7 +123,8 @@ class GPB2(SKF):
             # calculate V_{t+1,t|T}
             x_k_tplus1 = gmmsequence.get_smoothed_means(t+1)
             smoothed_VV_k_tplus1_t, x_k_t, M_tplus1 = params_
-            gmmsequence.smoothed_crossvar_collapsed[t + 1] = Utility.CollapseCross(x_k_tplus1, x_k_t, smoothed_VV_k_tplus1_t, M_tplus1)
+            gmmsequence.smoothed_crossvar_collapsed[t + 1] = Utility.CollapseCross(x_k_tplus1, x_k_t, smoothed_VV_k_tplus1_t,
+                                                                                   M_tplus1, transforms=gmm_state.transforms[:, 0])
 
             N = gmmsequence.initial_state.n_components
             for j in range(N):

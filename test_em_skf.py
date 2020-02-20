@@ -16,7 +16,7 @@ def get_Q(Q_sig, dt=1):
     return Q
 
 def get_Q_RW(Q_sig):
-    Q = (Q_sig ** 2) * np.diag([1, 1, 0, 0])
+    Q = (Q_sig ** 2) * np.diag([1, 1])
     return Q
 
 def get_R(R_sig):
@@ -64,7 +64,7 @@ def test_em_skf_cv():
     models_all, Z_all, dataset, LL = SKF.EM(dataset, initial_models, Z,
                                         max_iters=1000, threshold=1e-7, learn_H=True, learn_R=True,
                                         learn_A=True, learn_Q=True, learn_init_state=False, learn_Z=True,
-                                        keep_Q_structure=False, diagonal_Q=False, wishart_prior=False)
+                                        diagonal_Q=False, wishart_prior=False)
 
     return models_all, Z_all
 
@@ -87,8 +87,8 @@ def test_em_skf_rw():
 
     gmmsequence = GMMSequence(measurements, initial_gmm_state)
 
-    m1 = LinearModel(F, (5.0 ** 2) * np.eye(4), H, (2.0 ** 2) * np.eye(2))
-    m2 = LinearModel(F, (10.0 ** 2) * np.eye(4), H, (2.0 ** 2) * np.eye(2))
+    m1 = LinearModel(F, (1.0 ** 2) * np.eye(4), H, (2.0 ** 2) * np.eye(2))
+    m2 = LinearModel(F, (20.0 ** 2) * np.eye(4), H, (2.0 ** 2) * np.eye(2))
     initial_models = [m1, m2]
 
     Z = np.ones([2, 2]) / 2
@@ -98,7 +98,7 @@ def test_em_skf_rw():
     models_all, Z_all, dataset, LL = SKF.EM(dataset, initial_models, Z,
                                         max_iters=100, threshold=0.000001, learn_H=True, learn_R=True,
                                         learn_A=True, learn_Q=True, learn_init_state=False, learn_Z=True,
-                                        keep_Q_structure=False, diagonal_Q=False, wishart_prior=False)
+                                        diagonal_Q=False, wishart_prior=False)
 
 
     return models_all, Z_all
@@ -127,7 +127,7 @@ def test_em_skf_3():
     new_models, Z, dataset, LL = SKF.EM(dataset, initial_models, Z,
                                         max_iters=100, threshold=0.0001, learn_H=False, learn_R=True,
                                         learn_A=True, learn_Q=True, learn_init_state=True, learn_Z=True,
-                                        keep_Q_structure=False, diagonal_Q=False, wishart_prior=False)
+                                        diagonal_Q=False, wishart_prior=False)
 
     print(LL)
     print(Z)
@@ -143,16 +143,17 @@ def test_em_skf_cvrw():
         [0.0, 0.0, 1.0, 0.0],
         [0.0, 0.0, 0.0, 1.0]
     ])
-    F_RW = np.eye(4)
-    H = np.asanyarray([
+    F_RW = np.eye(2)
+    H_CV = np.asanyarray([
         [1.0, 0.0, 0.0, 0.0],
         [0.0, 1.0, 0.0, 0.0]
     ])
+    H_RW = np.eye(2)
     """ 
 
     """
     g1 = Gaussian(np.zeros([4, 1]), 25.0 * np.eye(4))
-    g2 = Gaussian(np.zeros([4, 1]), 25.0 * np.eye(4))
+    g2 = Gaussian(np.zeros([2, 1]), 25.0 * np.eye(2))
     initial_gmm_state = GMM([g1, g2])
 
     # measurements = 5 * np.random.randn(200, 2, 1) + 1
@@ -162,11 +163,11 @@ def test_em_skf_cvrw():
 
     gmmsequence = GMMSequence(measurements, initial_gmm_state)
 
-    m1 = LinearModel(F_CV, get_Q(1.0), H, (0.5 ** 2) * np.eye(2))
-    m2 = LinearModel(F_RW, get_Q_RW(10.0), H, (0.5 ** 2) * np.eye(2))
+    m1 = LinearModel(F_CV, get_Q(1.0), H_CV, (0.5 ** 2) * np.eye(2))
+    m2 = LinearModel(F_RW, get_Q_RW(3.0), H_RW, (0.5 ** 2) * np.eye(2))
     initial_models = [m1, m2]
 
-    Z = np.ones((3, 3)) / 2
+    Z = np.ones((2, 2)) / 2
     '''
     Z = np.array([[0.7, 0.15, 0.15],
                   [0.15, 0.7, 0.15],
@@ -175,9 +176,9 @@ def test_em_skf_cvrw():
     dataset = [gmmsequence]
 
     models_all, Z_all, dataset, LL = SKF.EM(dataset, initial_models, Z,
-                                            max_iters=100, threshold=0.00001, learn_H=False, learn_R=True,
-                                            learn_A=False, learn_Q=True, learn_init_state=False, learn_Z=True,
-                                            keep_Q_structure=False, diagonal_Q=False, wishart_prior=False)
+                                            max_iters=100, threshold=0.00001, learn_H=True, learn_R=True,
+                                            learn_A=True, learn_Q=True, learn_init_state=False, learn_Z=True,
+                                            diagonal_Q=False, wishart_prior=False)
 
     return models_all, Z_all
 

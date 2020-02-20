@@ -58,19 +58,26 @@ class Utility():
         return new_probs
 
     @staticmethod
-    def CollapseCross(x_list_t, x_list_tminus1, V_list_t_tminus1, W):
+    def CollapseCross(x_list_t: list, x_list_tminus1: list,
+                      V_list_t_tminus1: list, W: list, transforms: list=None):
         n_components = len(W)
+        if transforms is None:
+            transforms = []
+            for n in range(n_components):
+                transforms.append(np.eye(x_list_t[n].shape[0]))
+
         dim = x_list_t[0].shape[0]
         mu_x_t = np.zeros((dim, 1))
         mu_x_tminus1 = np.zeros((dim, 1))
 
-        for i in range(n_components):
-            mu_x_t += W[i] * x_list_t[i]
-            mu_x_tminus1 += W[i] * x_list_tminus1[i]
+        for n in range(n_components):
+            mu_x_t += W[n] * (transforms[n] @x_list_t[n])
+            mu_x_tminus1 += W[n] * (transforms[n] @ x_list_tminus1[n])
 
         V_collapsed_t_tminus1 = np.zeros_like(V_list_t_tminus1[0])
-        for i in range(n_components):
-            V_collapsed_t_tminus1 += W[i] * V_list_t_tminus1[i] + W[i] * ((x_list_t[i] - mu_x_t) @ (x_list_tminus1[i] - mu_x_tminus1).T)
+        for n in range(n_components):
+            V_collapsed_t_tminus1 += W[n] * (transforms[n] @ V_list_t_tminus1[n] @ transforms[n].T)\
+                                     + W[n] * ((transforms[n] @ x_list_t[n] - mu_x_t) @ (transforms[n] @ x_list_tminus1[n] - mu_x_tminus1).T)
 
         return V_collapsed_t_tminus1
 
@@ -97,6 +104,7 @@ class Utility():
 
     @staticmethod
     def annealing_weights(weights: np.ndarray, beta=1):
+
         anneal_weights = np.power(weights, beta)
         new_weights = np.zeros_like(weights)
         if anneal_weights.ndim == 1:
@@ -112,5 +120,13 @@ class Utility():
                     if ele <= 1e-4:
                         new_weight[i] = 1e-4
                 new_weights[r, :] = new_weight
+
+        '''new_weights = np.zeros_like(weights)
+        for r in range(weights.shape[0]):
+            for c in range(weights.shape[1]):
+                if weights[r, c] > 0.5:
+                    new_weights[r, c] = 1.0
+                else:
+                    new_weights[r, c] = 0.0'''
 
         return new_weights
