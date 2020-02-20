@@ -105,7 +105,7 @@ class SKF(EM):
                 for n in range(N):
                     sequence = dataset[n]
                     weights = sequence.get_smooth_weights()
-                    # weights = Utility.annealing_weights(weights)
+                    weights = Utility.annealing_weights(weights)
                     x_t = np.array([state.mean for state in sequence.smoothed_collapsed])
                     V_t = np.array([state.covar for state in sequence.smoothed_collapsed])
                     V_t_tminus1 = sequence.smoothed_crossvar_collapsed
@@ -130,7 +130,7 @@ class SKF(EM):
                 for n in range(N):
                     sequence = dataset[n]
                     weights = sequence.get_smooth_weights()
-                    # weights = Utility.annealing_weights(weights)
+                    weights = Utility.annealing_weights(weights)
                     x_t = np.array([state.mean for state in sequence.smoothed_collapsed])
                     V_t = np.array([state.covar for state in sequence.smoothed_collapsed])
                     V_t_tminus1 = sequence.smoothed_crossvar_collapsed
@@ -177,7 +177,7 @@ class SKF(EM):
                 for n in range(N):
                     sequence = dataset[n]
                     weights = sequence.get_smooth_weights()
-                    # weights = Utility.annealing_weights(weights)
+                    weights = Utility.annealing_weights(weights)
                     x_t = np.array([state.mean for state in sequence.smoothed_collapsed])
                     V_t = np.array([state.covar for state in sequence.smoothed_collapsed])
                     for t in range(1, sequence.len):
@@ -197,7 +197,7 @@ class SKF(EM):
                 for n in range(N):
                     sequence = dataset[n]
                     weights = sequence.get_smooth_weights()
-                    # weights = Utility.annealing_weights(weights)
+                    weights = Utility.annealing_weights(weights)
                     x_t = np.array([state.mean for state in sequence.smoothed_collapsed])
                     V_t = np.array([state.covar for state in sequence.smoothed_collapsed])
                     for t in range(0, sequence.len):

@@ -93,14 +93,14 @@ def create_path_constant_volocity_one_model():
 
 def create_path_constant_volocity():
     # Time
-    t = 400
+    t = 100
     # Let's assume two Kalman filters
-    Q = [get_Q(1.0), get_Q(3.0), get_Q(1.0)]
-    R = [get_R(0.55), get_R(0.7), get_R(0.35)]
+    Q = [get_Q(1.0), get_Q(12.0), get_Q(1.0)]
+    R = [get_R(1.05), get_R(0.85), get_R(1.5)]
 
     kf_ind = 0
-    kf_change_pnt = [150, 250]
-    x_tminus1 = np.asarray([[0.0], [0.0], [0.1], [0.1]])
+    kf_change_pnt = [65, 80]
+    x_tminus1 = np.asarray([[0.0], [0.0], [-0.5], [-0.5]])
     path = []
     meas = []
     for i in range(t):
@@ -140,13 +140,13 @@ def create_path_constant_volocity():
 # Create path
 def create_path_random_walk():
     # Time
-    t = 400
+    t = 100
     # Let's assume two Kalman filters
-    Q = [get_Q_RW(1.0), get_Q_RW(8.0)]
-    R = [get_R_RW(0.8), get_R_RW(1.0)]
+    Q = [get_Q_RW(3.0), get_Q_RW(20.0)]
+    R = [get_R_RW(1.8), get_R_RW(1.5)]
 
     kf_ind = 0
-    kf_change_pnt = [180]
+    kf_change_pnt = [20]
     x_tminus1 = np.asarray([[0.0], [0.0], [0.0], [0.0]])
     path = []
     meas = []
@@ -232,8 +232,8 @@ def create_path_cv_rw():
     truth_df.to_csv('data/groundtruth4.csv', index=False, header=False)
 
 # create_path_constant_volocity_one_model()
-create_path_constant_volocity()
-# create_path_random_walk()
+# create_path_constant_volocity()
+create_path_random_walk()
 # create_path_cv_rw()
 
 

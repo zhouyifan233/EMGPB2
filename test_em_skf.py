@@ -49,8 +49,8 @@ def test_em_skf_cv():
 
     gmmsequence = GMMSequence(measurements, initial_gmm_state)
 
-    m1 = LinearModel(F, get_Q(0.5), H, (0.5 ** 2) * np.eye(2))
-    m2 = LinearModel(F, get_Q(3.0), H, (0.5 ** 2) * np.eye(2))
+    m1 = LinearModel(F, get_Q(2.0), H, (1.0 ** 2) * np.eye(2))
+    m2 = LinearModel(F, get_Q(10.0), H, (1.0 ** 2) * np.eye(2))
     initial_models = [m1, m2]
 
     Z = np.ones((2, 2)) / 2
@@ -62,7 +62,7 @@ def test_em_skf_cv():
     dataset = [gmmsequence]
 
     models_all, Z_all, dataset, LL = SKF.EM(dataset, initial_models, Z,
-                                        max_iters=100, threshold=1e-6, learn_H=True, learn_R=True,
+                                        max_iters=1000, threshold=1e-7, learn_H=True, learn_R=True,
                                         learn_A=True, learn_Q=True, learn_init_state=False, learn_Z=True,
                                         keep_Q_structure=False, diagonal_Q=False, wishart_prior=False)
 
@@ -87,8 +87,8 @@ def test_em_skf_rw():
 
     gmmsequence = GMMSequence(measurements, initial_gmm_state)
 
-    m1 = LinearModel(F, (2.0 ** 2) * np.eye(4), H, (1.0 ** 2) * np.eye(2))
-    m2 = LinearModel(F, (3.0 ** 2) * np.eye(4), H, (1.0 ** 2) * np.eye(2))
+    m1 = LinearModel(F, (5.0 ** 2) * np.eye(4), H, (2.0 ** 2) * np.eye(2))
+    m2 = LinearModel(F, (10.0 ** 2) * np.eye(4), H, (2.0 ** 2) * np.eye(2))
     initial_models = [m1, m2]
 
     Z = np.ones([2, 2]) / 2
@@ -182,5 +182,5 @@ def test_em_skf_cvrw():
     return models_all, Z_all
 
 
-models_all, Z_all = test_em_skf_cv()
+models_all, Z_all = test_em_skf_rw()
 
