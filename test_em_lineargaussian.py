@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 
-from bayou.datastructures import Gaussian, GaussianSequence
-from bayou.models import LinearModel, ConstantVelocity
-from bayou.expmax.lineargaussian import LinearGaussian
+from emgpb2.states import Gaussian, GaussianSequence
+from emgpb2.models import LinearModel, ConstantVelocity
+from emgpb2.EM import LinearGaussian
 
 
 def get_Q(Q_sig, dt=1):
@@ -33,7 +33,6 @@ def test_em():
     """
     initial_state = Gaussian(np.zeros([4, 1]), 10.0*np.eye(4))
     initial_model = LinearModel(F, get_Q(5.0), H, (2.0 ** 2) * np.eye(2))
-    #initial_model = ConstantVelocity(dt=1.0, q=1.0, r=1.0, state_dim=4, obs_dim=2)
 
     measurements = np.loadtxt('data/measurement1.csv', delimiter=',')
     measurements = np.expand_dims(measurements, axis=-1)

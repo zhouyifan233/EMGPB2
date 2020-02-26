@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 
-from bayou.datastructures import Gaussian, GMM, GMMSequence
-from bayou.models import LinearModel, ConstantVelocity
-from bayou.expmax.skf import SKF
+from emgpb2.states import Gaussian, GMM, GMMSequence
+from emgpb2.models import LinearModel, ConstantVelocity
+from emgpb2.EM import SKF
 
 
 def get_Q(Q_sig, dt=1):
