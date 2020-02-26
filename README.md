@@ -1,12 +1,30 @@
+A python implementation of paper "Switching Kalman filters". This method is also called Expectation Maximisation Generalised Pseudo Bayes 2 (EMGPB-2).
 
-Estimate parameters of a linear dynamical system from multiple iid discrete-time observation sequences.
+Estimate parameters of a linear dynamical system from multiple iid discrete-time observation sequences. 
+ 
+Under Construction...
+
+Usage
+----------------------
+"create_test_data": create a track for testing. The track will be stored in folder "data/".  
+
+"test_em_lineargaussian": read a track from "data/" and estimate Single Kalman filter parameters.  
+
+"test_em_skf": read a track from "data/" and estimate switching (multiple) Kalman filter parameters.  
+
+"EMGPB2 example CV.ipynb" (Jupyter notebook): An example to show improvement of using EMGPB2 considering Constant Velocity model (CV) compared to unknown (guessed) parameters. 
+This example is supposed to run with Stone-soup which provides an IMM implementation.  
+
+"EMGPB2 example RW.ipynb" (Jupyter notebook): An example to show improvement of using EMGPB2 considering Random Walk model (RW) compared to unknown (guessed) parameters. 
+This example is supposed to run with Stone-soup which provides an IMM implementation.  
+
 
 Dependencies
 ----------------------
 Python (v3.7)  
-Numpy
-Scipy
-
+Numpy  
+Scipy  
+Stone-soup (https://github.com/dstl/Stone-Soup)
 
 References
 ----------------------
@@ -17,4 +35,6 @@ References
 
 Acknowledgement
 ----------------------
+This implementation is base on Josh Coates' work.  
+
 
