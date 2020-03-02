@@ -23,6 +23,19 @@ class LinearModel(Model):
         self.R = R
 
 
+class RandomWalk(LinearModel):
+    """Random Walk model"""
+    def __init__(self, q=1.0, r=1.0, state_dim=1):
+        self.state_dim = state_dim
+        self.obs_dim = state_dim
+        A = np.eye(state_dim)
+        Q = (q ** 2) * np.eye(state_dim)
+        H = np.eye(state_dim)
+        R = (r ** 2) * np.eye(state_dim)
+
+        super().__init__(A, Q, H, R)
+
+
 class ConstantVelocity(LinearModel):
     """Constant Velocity model
     Attributes:
@@ -42,16 +55,15 @@ class ConstantVelocity(LinearModel):
         n_dim = int(state_dim / 2)
         I = np.eye(n_dim)
 
-        self.A = np.kron(np.asarray([
+        A = np.kron(np.asarray([
             [1.0, dt],
             [0., 1.0]
         ]), I)
-
-        self.Q = q * np.kron(np.asarray([
+        Q = (q ** 2) * np.kron(np.asarray([
             [dt3, dt2],
             [dt2, dt]
-        ]), I)
+            ]), I)
+        H = np.eye(state_dim)[:obs_dim]
+        R = (r ** 2) * np.eye(obs_dim)
 
-        self.H = np.eye(state_dim)[:obs_dim]
-        self.R = r * np.eye(obs_dim)
-
+        super().__init__(A, Q, H, R)
