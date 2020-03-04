@@ -21,7 +21,7 @@ class LinearGaussianEstimator:
     @staticmethod
     def m_step(dataset, model, initial_model,
                learn_H, learn_R, learn_A, learn_Q, learn_init_state,
-               keep_Q_structure, diagonal_Q):
+               keep_Q_structure, diagonal_Q, verbose=True):
 
         N = len(dataset)
 
@@ -48,6 +48,8 @@ class LinearGaussianEstimator:
                     P_tminus1 += smoothed_V[t - 1] + smoothed_x[t - 1] @ smoothed_x[t - 1].T
             new_A = P_t_tminus1 @ linalg.inv(P_tminus1)
             model.A = new_A
+            if verbose:
+                print('new_A: \n' + str(model.A))
 
         if learn_Q:
             P_t = 0
@@ -81,7 +83,9 @@ class LinearGaussianEstimator:
 
             if diagonal_Q:
                 new_Q = np.diag(np.diag(new_Q))
-            model.Q = (new_Q + new_Q.T) / 2
+            model.Q = new_Q
+            if verbose:
+                print('new_Q: \n' + str(model.Q))
 
         if learn_H:
             y_t_times_x_t = 0
@@ -95,6 +99,8 @@ class LinearGaussianEstimator:
                     P_t += smoothed_V[t] + smoothed_x[t] @ smoothed_x[t].T
             new_H = y_t_times_x_t @ linalg.inv(P_t)
             model.H = new_H
+            if verbose:
+                print('new_H: \n' + str(model.H))
 
         if learn_R:
             y_t_times_x_t = 0
@@ -119,14 +125,16 @@ class LinearGaussianEstimator:
                 numerator = y_t_times_y_t - (old_H @ x_t_times_y_t) - (y_t_times_x_t @ old_H.T) + old_H @ P_t @ old_H.T
             denominator = sequence.len
             new_R = numerator/denominator
-            model.R = (new_R + new_R.T) / 2
+            model.R = new_R
+            if verbose:
+                print('new_R: \n' + str(model.R))
 
         return model
 
     @staticmethod
     def EM(dataset, initial_model, max_iters=20, threshold=0.0001,
            learn_H=True, learn_R=True, learn_A=True, learn_Q=True, learn_init_state=True,
-           keep_Q_structure=False, diagonal_Q=False):
+           keep_Q_structure=False, diagonal_Q=False, verbose=True):
         """ Expectation-Maximization for a Linear Gaussian State-Space model.
 
         Parameters
@@ -154,30 +162,24 @@ class LinearGaussianEstimator:
             # Check convergence
             sequence_LLs = [np.sum(sequence.loglikelihood) for sequence in dataset]
             LLs.append(np.sum(sequence_LLs))
-            print("Log-likelihood: " + str(np.sum(sequence_LLs)))
+            if verbose:
+                print("Log-likelihood: " + str(np.sum(sequence_LLs)))
             if len(LLs) > 1:
                 if Utility.check_lik_convergence(LLs[-1], LLs[-2], threshold):
-                    print('iterations:', i)
+                    if verbose:
+                        print('EM is converged...')
                     return model, dataset, LLs
 
             # M-Step
             model = LinearGaussianEstimator.m_step(dataset, model, initial_model,
                                           learn_H, learn_R,
                                           learn_A, learn_Q, learn_init_state,
-                                          keep_Q_structure, diagonal_Q)
-
-            print("Estimated F: ")
-            print(model.A)
-            print("Estimated Q: ")
-            print(model.Q)
-            print("Estimated H: ")
-            print(model.H)
-            print("Estimated R: ")
-            print(model.R)
-            print("iteration %d ... LL %.5f" % (i, np.sum(sequence_LLs)))
-            print("-----------------------------------------------------------------------")
-
-        print('Converged. Iterations:', i)
+                                          keep_Q_structure, diagonal_Q,
+                                                   verbose=verbose)
+            if verbose:
+                print('-----------------------------------------------')
+        if verbose:
+            print('Maximum iteration reached')
         return model, dataset, LLs
 
 
@@ -193,7 +195,7 @@ class SKFEstimator:
     @staticmethod
     def m_step(dataset, models, initial_models, Z,
                learn_H, learn_R, learn_A, learn_Q, learn_init_state, learn_Z,
-               diagonal_Q, wishart_prior):
+               diagonal_Q, wishart_prior, verbose=True):
 
         N = len(dataset)
         data_cardinality = 0
@@ -224,8 +226,8 @@ class SKFEstimator:
                         P_tminus1 += weights[t, m] * (V_t[t-1] + x_t[t-1] @ x_t[t-1].T)
                     new_A = P_t_tminus1 @ linalg.inv(P_tminus1)
                     models[m].A = new_A
-
-                print('model -- ' + str(m) + ' new_A: \n' + str(models[m].A))
+                if verbose:
+                    print('model -- ' + str(m) + ' new_A: \n' + str(models[m].A))
 
         if learn_Q:
             for m in range(n_models):
@@ -268,7 +270,8 @@ class SKFEstimator:
                     new_Q = np.diag(np.diag(new_Q))
                 # new_Q = (new_Q + new_Q.T)/2
                 models[m].Q = new_Q
-                print('model -- ' + str(m) + ' new_Q: \n' + str(models[m].Q))
+                if verbose:
+                    print('model -- ' + str(m) + ' new_Q: \n' + str(models[m].Q))
 
         if learn_H:
             for m in range(n_models):
@@ -286,7 +289,8 @@ class SKFEstimator:
                         P_t += weights[t, m] * (V_t[t] + x_t[t] @ x_t[t].T)
                 new_H = y_t_times_x_t @ linalg.inv(P_t)
                 models[m].H = new_H
-                print('model -- ' + str(m) + ' new_H: \n' + str(models[m].H))
+                if verbose:
+                    print('model -- ' + str(m) + ' new_H: \n' + str(models[m].H))
 
         if learn_R:
             for m in range(n_models):
@@ -316,7 +320,8 @@ class SKFEstimator:
                 new_R = numerator / denominator
                 # new_R = (new_R + new_R.T)/2
                 models[m].R = new_R
-                print('model -- ' + str(m) + ' new_R: \n' + str(models[m].R))
+                if verbose:
+                    print('model -- ' + str(m) + ' new_R: \n' + str(models[m].R))
 
         if learn_Z:
             z_numerator = 0
@@ -329,7 +334,8 @@ class SKFEstimator:
                 z_denominator += sequence.len
             new_Z = z_numerator / (z_denominator - 1)
             Z = new_Z
-            print('new_Z: \n' + str(new_Z))
+            if verbose:
+                print('new_Z: \n' + str(new_Z))
 
         if learn_init_state:
             for n in range(N):
@@ -340,7 +346,7 @@ class SKFEstimator:
     @staticmethod
     def EM(dataset, initial_models, Z, max_iters=20, threshold=0.0001,
            learn_H=True, learn_R=True, learn_A=True, learn_Q=True, learn_init_state=True, learn_Z=True,
-           diagonal_Q=False, wishart_prior=False):
+           diagonal_Q=False, wishart_prior=False, verbose=True):
         """ Expectation-Maximization for a Linear Gaussian State-Space model.
 
         Parameters
@@ -367,21 +373,26 @@ class SKFEstimator:
                 dataset[n] = SKFEstimator.e_step(dataset[n], models, Z)
             # Check convergence
             sequence_LLs = [np.sum(sequence.measurement_likelihood) for sequence in dataset]
-            print(np.sum(sequence_LLs))
+            if verbose:
+                print("Log-likelihood: " + str(np.sum(sequence_LLs)))
             LLs.append(np.sum(sequence_LLs))
             if len(LLs) > 1:
                 if Utility.check_lik_convergence(LLs[-1], LLs[-2], threshold):
-                    print('iterations:', i)
+                    if verbose:
+                        print('EM is converged...')
                     return models_all, Z_all, dataset, LLs
 
             # M-Step
             models, Z = SKFEstimator.m_step(dataset, models, initial_models, Z,
                                    learn_H, learn_R, learn_A, learn_Q,
                                    learn_init_state, learn_Z,
-                                   diagonal_Q, wishart_prior)
+                                   diagonal_Q, wishart_prior,
+                                            verbose=verbose)
             models_all.append(models)
             Z_all.append(Z)
-            print('-----------------------------------------------')
-        print('Converged. Iterations:', i)
+            if verbose:
+                print('-----------------------------------------------')
+        if verbose:
+            print('Maximum iteration reached')
 
         return models_all, Z_all, dataset, LLs

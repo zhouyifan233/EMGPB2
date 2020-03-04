@@ -11,7 +11,8 @@ from emgpb2.EM import LinearGaussianEstimator
 # Constant Velocity Model.
 def test_lg_cv_estimator(init_P=5.0, q=0.5, r=1.0,
                          state_dim=4, obs_dim=2,
-                         input_measurement='data/measurement1.csv'):
+                         input_measurement='data/measurement1.csv',
+                         verbose=True):
     initial_state = Gaussian(np.zeros([state_dim, 1]), (init_P ** 2) * np.eye(state_dim))
     initial_model = ConstantVelocity(dt=1.0, q=q, r=r, state_dim=state_dim, obs_dim=obs_dim)
     if isinstance(input_measurement, str):
@@ -27,9 +28,9 @@ def test_lg_cv_estimator(init_P=5.0, q=0.5, r=1.0,
                                                      max_iters=300, threshold=1e-6,
                                                      learn_H=True, learn_R=True,
                                                      learn_A=True, learn_Q=True, learn_init_state=True,
-                                                     keep_Q_structure=False, diagonal_Q=False)
+                                                     keep_Q_structure=False, diagonal_Q=False, verbose=verbose)
 
-    return model, dataset
+    return model, LLs
 
 
 # The EM for GPB2.
@@ -37,7 +38,8 @@ def test_lg_cv_estimator(init_P=5.0, q=0.5, r=1.0,
 # Two different Constant Velocity Models.
 def test_skf_cv_estimator(init_P: list = [5.0, 5.0], q: list = [2.0, 10.0], r: list = [1.0, 1.0],
                           state_dim=4, obs_dim=2,
-                          input_measurement='data/measurement2.csv'):
+                          input_measurement='data/measurement2.csv',
+                          verbose=True):
     """ 
 
     """
@@ -64,19 +66,20 @@ def test_skf_cv_estimator(init_P: list = [5.0, 5.0], q: list = [2.0, 10.0], r: l
     # Switching matrix
     Z = np.ones((2, 2)) / 2
 
-    models_all, Z_all, dataset, LL = SKFEstimator.EM(dataset, constantvelocity_models, Z,
+    models_all, Z_all, dataset, LLs = SKFEstimator.EM(dataset, constantvelocity_models, Z,
                                                      max_iters=300, threshold=1e-6, learn_H=True, learn_R=True,
                                                      learn_A=True, learn_Q=True, learn_init_state=False, learn_Z=True,
-                                                     diagonal_Q=False, wishart_prior=False)
+                                                     diagonal_Q=False, wishart_prior=False, verbose=verbose)
 
-    return models_all, Z_all
+    return models_all, LLs
 
 
 # The EM for GPB2.
 # Estimate parameters of two Kalman filters.
 # Two different Random Walk Models.
 def test_skf_rw_estimator(init_P: list = [5.0, 5.0], q: list = [1.0, 20.0], r: list = [2.0, 2.0],
-                          state_dim=2, input_measurement='data/measurement3.csv'):
+                          state_dim=2, input_measurement='data/measurement3.csv',
+                          verbose=True):
     """
 
     """
@@ -103,9 +106,9 @@ def test_skf_rw_estimator(init_P: list = [5.0, 5.0], q: list = [1.0, 20.0], r: l
     # Switching matrix
     Z = np.ones((2, 2)) / 2
 
-    models_all, Z_all, dataset, LL = SKFEstimator.EM(dataset, constantvelocity_models, Z,
+    models_all, Z_all, dataset, LLs = SKFEstimator.EM(dataset, constantvelocity_models, Z,
                                                      max_iters=300, threshold=1e-6, learn_H=True, learn_R=True,
                                                      learn_A=True, learn_Q=True, learn_init_state=False, learn_Z=True,
-                                                     diagonal_Q=False, wishart_prior=False)
+                                                     diagonal_Q=False, wishart_prior=False, verbose=verbose)
 
-    return models_all, Z_all
+    return models_all, LLs

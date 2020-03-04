@@ -33,7 +33,7 @@ def create_path_constant_volocity_one_model(output_measurements='data/measuremen
         x_tminus1 = x_t
     path = np.squeeze(np.asarray(path))
     meas = np.squeeze(np.asarray(meas))
-    drawer(meas, path)
+    # drawer(meas, path)
     print('F:')
     print(F)
     print('H:')
@@ -98,7 +98,7 @@ def create_path_constant_volocity_multi_model(output_measurements='data/measurem
         x_tminus1 = x_t
     path = np.squeeze(np.asarray(path))
     meas = np.squeeze(np.asarray(meas))
-    drawer(meas, path)
+    # drawer(meas, path)
     for i in range(len(kf_change_pnt) + 1):
         print('F_' + str(i) + ': ')
         print(F[i])
@@ -163,7 +163,7 @@ def create_path_random_walk_multi_model(output_measurements='data/measurement3.c
         x_tminus1 = x_t
     path = np.squeeze(np.asarray(path))
     meas = np.squeeze(np.asarray(meas))
-    drawer(meas, path)
+    # drawer(meas, path)
     for i in range(len(kf_change_pnt) + 1):
         print('F_' + str(i) + ': ')
         print(F[i])

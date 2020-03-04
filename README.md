@@ -6,11 +6,9 @@ Under Construction...
 
 Usage
 ----------------------
-"create_test_data": create a track for testing. The track will be stored in folder "data/".  
+"test_emgpb2_estimation": Simulate a path using given parameters (two models). Estimate the parameters using EMGPB2. Includes two scenarios constant velocity and random walk.  
 
-"test_em_lineargaussian": read a track from "data/" and estimate Single Kalman filter parameters.  
-
-"test_em_skf": read a track from "data/" and estimate switching (multiple) Kalman filter parameters.  
+"create_test_data": create a track for testing. The track will be stored in folder "data/".
 
 "EMGPB2 example CV.ipynb" (Jupyter notebook): An example to show improvement of using EMGPB2 considering Constant Velocity model (CV) compared to unknown (guessed) parameters. 
 This example is supposed to run with Stone-soup which provides an IMM implementation.  

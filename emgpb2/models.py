@@ -47,7 +47,7 @@ class ConstantVelocity(LinearModel):
     obs_dim : Measurement dimension
     """
 
-    def __init__(self, dt=1.0, q=1.0, r=1.0, state_dim=2, obs_dim=1):
+    def __init__(self, dt=1.0, q=1.0, r=1.0, state_dim=2, obs_dim=1, mode='kron'):
         self.state_dim = state_dim
         self.obs_dim = obs_dim
         dt2 = dt**2 / 2.0
@@ -55,15 +55,31 @@ class ConstantVelocity(LinearModel):
         n_dim = int(state_dim / 2)
         I = np.eye(n_dim)
 
-        A = np.kron(np.asarray([
-            [1.0, dt],
-            [0., 1.0]
-        ]), I)
-        Q = (q ** 2) * np.kron(np.asarray([
-            [dt3, dt2],
-            [dt2, dt]
+        if mode == 'kron':
+            A = np.kron(np.asarray([
+                [1.0, dt],
+                [0., 1.0]
             ]), I)
-        H = np.eye(state_dim)[:obs_dim]
-        R = (r ** 2) * np.eye(obs_dim)
+            Q = (q ** 2) * np.kron(np.asarray([
+                [dt3, dt2],
+                [dt2, dt]
+                ]), I)
+            H = np.eye(state_dim)[:obs_dim]
+            R = (r ** 2) * np.eye(obs_dim)
+        elif mode == 'diag':
+            A_base = np.array([[1, dt], [0, 1]])
+            A = np.zeros((state_dim, state_dim))
+            for i in range(0, state_dim, 2):
+                A[i:i+2, i:i+2] = A_base
+            Q_base = (q ** 2) * np.array(np.asarray([[dt3, dt2], [dt2, dt]]))
+            Q = np.zeros((state_dim, state_dim))
+            for i in range(0, state_dim, 2):
+                Q[i:i + 2, i:i + 2] = Q_base
+            H = np.zeros((obs_dim, state_dim))
+            for i in range(0, obs_dim):
+                H[i, i*2] = 1.0
+            R = (r ** 2) * np.eye(obs_dim)
+        else:
+            print("Constant Velocity initialisation failed!")
 
         super().__init__(A, Q, H, R)
