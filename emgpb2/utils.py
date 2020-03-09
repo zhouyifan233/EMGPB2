@@ -3,6 +3,7 @@ import numpy as np
 import copy
 from scipy import linalg
 from emgpb2.states import Gaussian
+import matplotlib.pyplot as plt
 
 
 class Utility:
@@ -129,3 +130,12 @@ class Utility:
                     new_weights[r, c] = 0.0'''
 
         return new_weights
+
+
+    @staticmethod
+    def draw_convergence_figure(LLs):
+        plt.figure()
+        plt.plot(np.array(range(len(LLs))), np.array(LLs))
+        plt.xlabel('Iterations')
+        plt.ylabel('Log-likelihood')
+
